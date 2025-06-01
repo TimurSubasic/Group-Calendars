@@ -1,43 +1,66 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Tabs } from "expo-router";
+import { Tabs, useSegments } from "expo-router";
+import { Text, View } from "react-native";
+import { useEffect, useState } from "react";
 
 export default function TabLayout() {
+  const segments = useSegments();
+
+  const [header, setHeader] = useState("Your Groups");
+
+  useEffect(() => {
+    if (segments[1] === "settings") {
+      setHeader("Settings");
+    } else {
+      setHeader("Your Groups");
+    }
+  }, [segments]);
+
   return (
-    <Tabs
-      screenOptions={{
-        animation: "fade",
-        headerShown: false,
-        // tabBarShowLabel: false,
-        tabBarActiveTintColor: "#42d4f4",
-        tabBarInactiveTintColor: "#f1f5f9",
-        tabBarStyle: {
-          backgroundColor: "#1e293b",
-          paddingTop: 10,
-          height: 60,
-          elevation: 0,
-          paddingBottom: 10,
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Groups",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome6 size={24} name="users" color={color} />
-          ),
+    <View className="flex-1">
+      {/* Header */}
+      <View className="w-full bg-slate-800 p-5">
+        {/* Group Name */}
+        <Text className="text-2xl font-bold text-white text-center mx-20">
+          {header}
+        </Text>
+      </View>
+      <Tabs
+        screenOptions={{
+          animation: "fade",
+          headerShown: false,
+          // tabBarShowLabel: false,
+          tabBarActiveTintColor: "#42d4f4",
+          tabBarInactiveTintColor: "#f1f5f9",
+          tabBarStyle: {
+            backgroundColor: "#1e293b",
+            paddingTop: 10,
+            height: 60,
+            elevation: 0,
+            paddingBottom: 10,
+          },
         }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          tabBarIcon: ({ color }) => (
-            <Ionicons size={28} name="settings-sharp" color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Groups",
+            tabBarIcon: ({ color }) => (
+              <FontAwesome6 size={24} name="users" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: "Settings",
+            tabBarIcon: ({ color }) => (
+              <Ionicons size={28} name="settings-sharp" color={color} />
+            ),
+          }}
+        />
+      </Tabs>
+    </View>
   );
 }

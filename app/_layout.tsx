@@ -1,14 +1,19 @@
-import { Stack } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import "../global.css";
 import { GroupProvider } from "@/contexts/GroupContext";
+import ClerkAndConvexProvider from "@/providers/ClerkAndConvexProvider";
+import InitalLayout from "@/components/InitialLayout";
 
 export default function RootLayout() {
   return (
-    <GroupProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#1e293b" }}>
-        <Stack screenOptions={{ headerShown: false, animation: "fade" }} />
-      </SafeAreaView>
-    </GroupProvider>
+    <ClerkAndConvexProvider>
+      <GroupProvider>
+        <SafeAreaProvider>
+          <SafeAreaView style={{ flex: 1, backgroundColor: "#1e293b" }}>
+            <InitalLayout />
+          </SafeAreaView>
+        </SafeAreaProvider>
+      </GroupProvider>
+    </ClerkAndConvexProvider>
   );
 }
