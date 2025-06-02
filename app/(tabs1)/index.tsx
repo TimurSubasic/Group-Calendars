@@ -10,6 +10,7 @@ import NoGroups from "@/components/NoGroups";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import Dialog from "react-native-dialog";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function Index() {
   const router = useRouter();
@@ -67,6 +68,13 @@ export default function Index() {
 
   //dialog box join
   const [code, setCode] = useState("");
+  const [finalCode, setFinalCode] = useState<string | undefined>(undefined);
+
+  const group = useQuery(
+    api.groups.getByCode,
+    finalCode ? { joinCode: finalCode } : "skip"
+  );
+
   const [visibleJoin, setVisibleJoin] = useState(false);
 
   const [body, setBody] = useState("Enter join code");
@@ -83,13 +91,28 @@ export default function Index() {
     setBody("Enter join code");
   };
 
+  const addMember = useMutation(api.groupMembers.addMember);
+
   const handleJoin = () => {
     if (code.length === 6) {
       //join group
       // check if code is valid
       // if valid, join group
       // if not valid, show error
-      setVisibleJoin(false);
+      setFinalCode(code.toUpperCase());
+      setBody("Joining group...");
+
+      if (group?.success) {
+        addMember({
+          groupId: group.groupId as Id<"groups">,
+          userId: fullUser!._id,
+        });
+        setVisibleJoin(false);
+        setCode("");
+        setBody("Enter join code");
+      } else {
+        setBody("Group not found");
+      }
     } else {
       setBody("Invalid join code");
     }

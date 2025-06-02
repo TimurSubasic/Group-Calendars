@@ -78,7 +78,11 @@ export const getByCode = query({
       };
     }
 
-    return group;
+    return {
+      success: true,
+      message: "Group found",
+      groupId: group._id,
+    };
   },
 });
 
@@ -97,6 +101,56 @@ export const getById = query({
     }
 
     return group;
+  },
+});
+
+export const getAdmins = query({
+  args: {
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
+    const group = await ctx.db.get(args.groupId);
+    if (!group) {
+      return [];
+    }
+    // Fetch all admin user documents in parallel
+    const users = await Promise.all(
+      group.adminIds.map((userId) => ctx.db.get(userId))
+    );
+
+    return users;
+  },
+});
+
+export const isAdmin = query({
+  args: {
+    groupId: v.id("groups"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const group = await ctx.db.get(args.groupId);
+    return (group?.adminIds ?? []).includes(args.userId);
+  },
+});
+
+export const addAdmin = mutation({
+  args: {
+    groupId: v.id("groups"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const group = await ctx.db.get(args.groupId);
+    if (!group) {
+      return { success: false, message: "Group not found" };
+    }
+    // Avoid adding duplicate admin
+    if (group.adminIds.includes(args.userId)) {
+      return { success: false, message: "User is already an admin" };
+    }
+    await ctx.db.patch(args.groupId, {
+      adminIds: [...group.adminIds, args.userId],
+    });
+    return { success: true, message: "Admin added" };
   },
 });
 

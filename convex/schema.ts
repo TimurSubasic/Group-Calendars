@@ -20,7 +20,8 @@ export default defineSchema({
     userId: v.id("users"),
   })
     .index("by_group_id", ["groupId"])
-    .index("by_user_id", ["userId"]),
+    .index("by_user_id", ["userId"])
+    .index("by_group_and_user", ["groupId", "userId"]),
 
   bookings: defineTable({
     groupId: v.id("groups"),
@@ -30,6 +31,8 @@ export default defineSchema({
     endDate: v.string(),
   })
     .index("by_group_id", ["groupId"])
+    .index("by_group_and_start_date", ["groupId", "startDate"])
     .index("by_user_id", ["userId"])
-    .index("by_group_id_and_user_id", ["groupId", "userId"]),
+    .index("by_group_and_user", ["groupId", "userId"])
+    .index("by_end_date", ["endDate"]),
 });

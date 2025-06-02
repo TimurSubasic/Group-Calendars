@@ -4,9 +4,14 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Tabs, useRouter } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
 import { useGroup } from "@/contexts/GroupContext";
+import { useQuery } from "convex/react";
+import { Id } from "@/convex/_generated/dataModel";
+import { api } from "@/convex/_generated/api";
+import { useUser } from "@clerk/clerk-expo";
+import Loading from "@/components/Loading";
 
 export default function TabLayout() {
-  const { groupName, setGroupId, setGroupName } = useGroup();
+  const { groupId, groupName, setGroupId, setGroupName } = useGroup();
 
   const router = useRouter();
 
@@ -15,6 +20,33 @@ export default function TabLayout() {
     setGroupId(null);
     setGroupName(null);
   };
+
+  const { user } = useUser();
+
+  const clerkId = user?.id as string;
+
+  const fullUser = useQuery(
+    api.users.getUserByClerk,
+    clerkId ? { clerkId } : "skip"
+  );
+
+  const group = useQuery(
+    api.groupMembers.findGroup,
+    fullUser
+      ? {
+          groupId: groupId as Id<"groups">,
+          userId: fullUser._id,
+        }
+      : "skip"
+  );
+
+  if (group === undefined) {
+    return <Loading />;
+  }
+
+  if (group.found === false) {
+    router.replace("/(tabs1)");
+  }
 
   return (
     <View className="flex-1">

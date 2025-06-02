@@ -1,8 +1,8 @@
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { useUser } from "@clerk/clerk-expo";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useMutation, useQuery } from "convex/react";
-import { useSegments } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ScrollView,
@@ -53,7 +53,7 @@ const NoGroups = () => {
   const [code, setCode] = useState("");
   const [finalCode, setFinalCode] = useState<string | undefined>(undefined);
 
-  const [codeAttempt, setCodeAttempt] = useState(false);
+  const [message, setMessage] = useState("");
 
   const group = useQuery(
     api.groups.getByCode,
@@ -61,29 +61,25 @@ const NoGroups = () => {
   );
 
   const handleCodeJoin = () => {
-    //
-    //
-    //
-    //
-    //  need work done here
-    //
-    //
-    //
-    //
     setFinalCode(code.toUpperCase());
-    if (group !== undefined) {
-      setCodeAttempt(true);
-    }
   };
 
-  const segments = useSegments();
+  const addMember = useMutation(api.groupMembers.addMember);
 
   useEffect(() => {
-    if (codeAttempt) {
-      setCodeAttempt(false);
+    if (group?.success) {
+      addMember({
+        groupId: group.groupId as Id<"groups">,
+        userId: fullUser!._id,
+      });
+    } else {
+      setMessage(group?.message as string);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [segments]);
+  }, [group, addMember, fullUser]);
+
+  useEffect(() => {
+    setMessage("");
+  }, [code]);
 
   return (
     <ScrollView
@@ -112,13 +108,10 @@ const NoGroups = () => {
                 </Text>
               </TouchableOpacity>
             </View>
-            {codeAttempt ? (
-              <Text className="text-red-500 font-semibold text-md">
-                No group found
-              </Text>
-            ) : (
-              <View />
-            )}
+
+            <Text className="text-red-500 font-semibold text-md">
+              {message}
+            </Text>
           </View>
 
           <View className="flex w-full items-center justify-center my-10">
