@@ -68,7 +68,9 @@ export const getByCode = query({
   handler: async (ctx, args) => {
     const group = await ctx.db
       .query("groups")
-      .withIndex("by_join_code", (q) => q.eq("joinCode", args.joinCode))
+      .withIndex("by_join_code", (q) =>
+        q.eq("joinCode", args.joinCode.toUpperCase())
+      )
       .first();
 
     if (!group) {
@@ -94,10 +96,7 @@ export const getById = query({
     const group = await ctx.db.get(args.groupId);
 
     if (!group) {
-      return {
-        success: false,
-        message: "Group not found",
-      };
+      return group;
     }
 
     return group;

@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { useGroup } from "@/contexts/GroupContext";
 import { useUser } from "@clerk/clerk-expo";
@@ -94,29 +94,23 @@ export default function Index() {
   const addMember = useMutation(api.groupMembers.addMember);
 
   const handleJoin = () => {
-    if (code.length === 6) {
-      //join group
-      // check if code is valid
-      // if valid, join group
-      // if not valid, show error
-      setFinalCode(code.toUpperCase());
-      setBody("Joining group...");
-
-      if (group?.success) {
-        addMember({
-          groupId: group.groupId as Id<"groups">,
-          userId: fullUser!._id,
-        });
-        setVisibleJoin(false);
-        setCode("");
-        setBody("Enter join code");
-      } else {
-        setBody("Group not found");
-      }
-    } else {
-      setBody("Invalid join code");
-    }
+    setFinalCode(code);
+    setBody("Joining group...");
   };
+
+  useEffect(() => {
+    if (group?.success) {
+      addMember({
+        groupId: group.groupId as Id<"groups">,
+        userId: fullUser!._id,
+      });
+      setVisibleJoin(false);
+      setCode("");
+      setBody("Enter join code");
+    } else {
+      setBody(group?.message as string);
+    }
+  }, [group, addMember, fullUser]);
 
   if (groups === undefined) {
     return <Loading />;
