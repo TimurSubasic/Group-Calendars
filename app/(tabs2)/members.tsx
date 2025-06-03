@@ -8,7 +8,6 @@ import * as Clipboard from "expo-clipboard";
 import Loading from "@/components/Loading";
 import Toast, { BaseToast } from "react-native-toast-message";
 import { useUser } from "@clerk/clerk-expo";
-import { isAdmin } from "./../../convex/groups";
 
 export default function Members() {
   const { groupId } = useGroup();
