@@ -12,7 +12,9 @@ export default defineSchema({
   groups: defineTable({
     name: v.string(),
     adminIds: v.array(v.id("users")),
-    joinCode: v.string(),
+    joinCode: v.optional(v.string()),
+    allowJoin: v.boolean(),
+    maxBookings: v.number(),
   }).index("by_join_code", ["joinCode"]),
 
   groupMembers: defineTable({

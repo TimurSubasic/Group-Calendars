@@ -1,12 +1,12 @@
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import React, { useState } from "react";
+import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useGroup } from "@/contexts/GroupContext";
 import { Id } from "@/convex/_generated/dataModel";
-import Dialog from "react-native-dialog";
 import * as Clipboard from "expo-clipboard";
 import Loading from "@/components/Loading";
+import Toast, { BaseToast } from "react-native-toast-message";
 
 export default function Members() {
   const { groupId } = useGroup();
@@ -19,19 +19,28 @@ export default function Members() {
     groupId: groupId as Id<"groups">,
   });
 
-  const [visibleAdd, setVisibleAdd] = useState(false);
-
-  const showDialogAdd = () => {
-    setVisibleAdd(true);
-  };
-
-  const handleCancelAdd = () => {
-    setVisibleAdd(false);
+  const toastConfig = {
+    success: (props: any) => (
+      <BaseToast
+        {...props}
+        style={{ borderLeftColor: "#1e293b", borderLeftWidth: 10 }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
+        text1Style={{ fontSize: 18 }}
+        text2Style={{ fontSize: 16 }}
+      />
+    ),
   };
 
   const handleAdd = async () => {
     await Clipboard.setStringAsync(group?.joinCode as string);
-    setVisibleAdd(false);
+
+    Toast.show({
+      type: "success",
+      text1: group!.joinCode as string,
+      text2: "Coppied, send it to your friends!",
+      position: "top",
+      visibilityTime: 4500,
+    });
   };
 
   if (group === undefined || members === undefined) {
@@ -61,7 +70,7 @@ export default function Members() {
                     className={` w-full flex items-start justify-start `}
                     style={{ backgroundColor: users.color as string }}
                   >
-                    <Text className="font-semibold text-xl bg-white p-3 w-[35%] rounded-r-full">
+                    <Text className="font-semibold text-xl bg-white p-5 w-[45%] rounded-r-full">
                       {users.username}
                     </Text>
                   </View>
@@ -73,26 +82,20 @@ export default function Members() {
       </View>
 
       {/* buttons */}
-      <View className="w-full flex flex-row items-center justify-center gap-3 border-t-2 border-slate-800 pt-4 p-5">
-        <TouchableOpacity
-          onPress={showDialogAdd}
-          className="flex-1 flex-row items-center justify-center rounded-lg bg-slate-800 p-5"
-        >
-          <Text className="text-white font-bold text-xl text-center">
-            Add Members
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {group?.allowJoin && (
+        <View className="w-full flex flex-row items-center justify-center gap-3 border-t-2 border-slate-800 pt-4 p-5">
+          <TouchableOpacity
+            onPress={handleAdd}
+            className="flex-1 flex-row items-center justify-center rounded-lg bg-slate-800 p-5"
+          >
+            <Text className="text-white font-bold text-xl text-center">
+              Add Members
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
-      {/*  Dialog  */}
-      <Dialog.Container visible={visibleAdd}>
-        <Dialog.Title>{group?.joinCode}</Dialog.Title>
-        <Dialog.Description>
-          Click the copy button and send it to your family!
-        </Dialog.Description>
-        <Dialog.Button label="Cancel" onPress={handleCancelAdd} />
-        <Dialog.Button label="Copy" onPress={handleAdd} />
-      </Dialog.Container>
+      <Toast config={toastConfig} />
     </View>
   );
 }

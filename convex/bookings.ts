@@ -10,17 +10,26 @@ export const createBooking = mutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const existingBooking = await ctx.db
+    const existingBookings = await ctx.db
       .query("bookings")
       .withIndex("by_group_and_user", (q) =>
         q.eq("groupId", args.groupId).eq("userId", args.userId)
       )
-      .first();
+      .collect();
 
-    if (existingBooking) {
+    const group = await ctx.db.get(args.groupId);
+
+    if (!group) {
       return {
         success: false,
-        message: "Booking already exists",
+        message: "Group not found",
+      };
+    }
+
+    if (existingBookings.length >= group?.maxBookings) {
+      return {
+        success: false,
+        message: "You have reached the maximum number of bookings",
       };
     }
 
@@ -88,20 +97,20 @@ export const getByGroupId = query({
   },
 });
 
-export const getCurrent = query({
+export const getUserBookings = query({
   args: {
     groupId: v.id("groups"),
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const booking = await ctx.db
+    const bookings = await ctx.db
       .query("bookings")
       .withIndex("by_group_and_user", (q) =>
         q.eq("groupId", args.groupId).eq("userId", args.userId)
       )
-      .first();
+      .collect();
 
-    return booking;
+    return bookings;
   },
 });
 

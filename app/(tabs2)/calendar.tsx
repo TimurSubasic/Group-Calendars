@@ -2,7 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Calendar, DateData } from "react-native-calendars";
 import { useGroup } from "@/contexts/GroupContext";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Loading from "@/components/Loading";
@@ -34,8 +34,8 @@ export default function Bookings() {
     groupId: groupId as Id<"groups">,
   });
 
-  const currentBooking = useQuery(
-    api.bookings.getCurrent,
+  const userBookings = useQuery(
+    api.bookings.getUserBookings,
     fullUser
       ? {
           groupId: groupId as Id<"groups">,
@@ -137,11 +137,38 @@ export default function Bookings() {
     }
   };
 
-  const handleSave = () => {};
+  const [note, setNote] = useState<string | undefined>(undefined);
+
+  const createBooking = useMutation(api.bookings.createBooking);
+
+  const handleSave = async () => {
+    if (startDate) {
+      const booking = await createBooking({
+        startDate: startDate,
+        endDate: endDate || startDate, // If no endDate, use startDate
+        groupId: groupId as Id<"groups">,
+        userId: fullUser!._id,
+        note: note, // add note
+      });
+
+      setMarkedDates({
+        [""]: {
+          selected: false,
+          startingDay: false,
+          endingDay: false,
+          color: "#fff",
+        },
+      });
+
+      if (!booking.success) {
+        // setVisible(true);
+      }
+    }
+  };
 
   const handleBookingDelete = () => {};
 
-  if (bookings === undefined) {
+  if (bookings === undefined || userBookings === undefined) {
     return <Loading />;
   }
 
@@ -232,13 +259,13 @@ export default function Bookings() {
           </View>
         </View>
 
-        {currentBooking ? (
+        {userBookings?.length !== 0 ? (
           <TouchableOpacity
             onPress={() => handleBookingDelete()}
             className="p-5 bg-red-600 rounded-lg w-full mb-5 mt-10"
           >
             <Text className="text-center text-white font-bold text-xl ">
-              Delete My Booking
+              Delete Bookings
             </Text>
           </TouchableOpacity>
         ) : (
@@ -247,6 +274,15 @@ export default function Bookings() {
 
         {/* end of p-5 view */}
       </View>
+      {/* 
+      <Modal
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+        transparent={true}
+      >
+        <View />
+      </Modal>
+      */}
     </ScrollView>
   );
 }

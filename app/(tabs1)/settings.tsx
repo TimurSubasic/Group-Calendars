@@ -5,14 +5,15 @@ import { useMutation, useQuery } from "convex/react";
 import { useSegments } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  Modal,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import Dialog from "react-native-dialog";
 import colors from "../../components/colors";
+import { BlurView } from "expo-blur";
 
 const Settings = () => {
   const { signOut } = useAuth();
@@ -75,14 +76,19 @@ const Settings = () => {
 
   const changeColor = useMutation(api.users.changeColor);
 
-  const handleColorSave = () => {
-    if (fullUser!.color !== pickedColor) {
-      changeColor({
-        id: fullUser!._id,
-        color: pickedColor!,
-      });
+  useEffect(() => {
+    if (segments[0] === "(tabs1)" && segments[1] !== "settings") {
+      if (fullUser!.color !== pickedColor) {
+        changeColor({
+          id: fullUser!._id,
+          color: pickedColor!,
+        });
+      }
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [segments]);
+
+  const [modalVisible, setModalVisible] = useState(false);
 
   if (fullUser === undefined) {
     return <Loading />;
@@ -145,14 +151,6 @@ const Settings = () => {
                   />
                 ))}
               </View>
-              <TouchableOpacity
-                onPress={handleColorSave}
-                className="w-full rounded-lg bg-slate-800 p-5"
-              >
-                <Text className="text-white font-bold text-xl text-center">
-                  Save
-                </Text>
-              </TouchableOpacity>
             </View>
           </View>
 
@@ -163,7 +161,7 @@ const Settings = () => {
             <View className=" w-full bg-red-600 h-1.5 rounded-b-lg" />
 
             <TouchableOpacity
-              onPress={showLogOut}
+              onPress={() => setModalVisible(true)}
               className="p-5 bg-red-600 rounded-lg w-full mt-5"
             >
               <Text className="text-center text-white font-bold text-xl ">
@@ -172,18 +170,53 @@ const Settings = () => {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/** Log Out dialog box */}
-        <Dialog.Container visible={logOutVisible}>
-          <Dialog.Title>Log Out</Dialog.Title>
-          <Dialog.Description>
-            You are about to Log Out of your account, are you sure you want to
-            continue?
-          </Dialog.Description>
-          <Dialog.Button label="Cancel" onPress={handleLogOutCancel} />
-          <Dialog.Button label="Log Out" onPress={handleLogOut} />
-        </Dialog.Container>
       </View>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        <BlurView
+          intensity={100}
+          tint="dark"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+        <View className="flex-1 flex items-center justify-center">
+          <View className="w-[80%] -mt-[10%] bg-white rounded-xl p-5 ">
+            <Text className="text-2xl font-bold text-center">
+              Log Out of your account?
+            </Text>
+
+            <View className="flex flex-row w-full mt-10 gap-3">
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                className="p-5 bg-slate-800 rounded-lg flex-1"
+              >
+                <Text className="text-center text-white font-bold text-xl ">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => signOut()}
+                className="p-5 bg-red-600 rounded-lg flex-1"
+              >
+                <Text className="text-center text-white font-bold text-xl ">
+                  Log Out
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };

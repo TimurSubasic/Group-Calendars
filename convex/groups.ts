@@ -14,30 +14,35 @@ export const createGroup = mutation({
   args: {
     name: v.string(),
     userId: v.id("users"),
+    allowJoin: v.boolean(),
+    maxBookings: v.number(),
   },
   handler: async (ctx, args) => {
-    let joinCode;
+    let joinCode = undefined;
     let existing;
 
-    // Try max 10 times to find a unique code
-    for (let i = 0; i < 10; i++) {
-      const code = generateJoinCode().toUpperCase();
-      existing = await ctx.db
-        .query("groups")
-        .withIndex("by_join_code", (q) => q.eq("joinCode", code))
-        .first();
+    // if group allows join, generate a join code
+    if (args.allowJoin) {
+      // Try max 10 times to find a unique code
+      for (let i = 0; i < 10; i++) {
+        const code = generateJoinCode().toUpperCase();
+        existing = await ctx.db
+          .query("groups")
+          .withIndex("by_join_code", (q) => q.eq("joinCode", code))
+          .first();
 
-      if (!existing) {
-        joinCode = code;
-        break;
+        if (!existing) {
+          joinCode = code;
+          break;
+        }
       }
-    }
 
-    if (!joinCode) {
-      return {
-        success: false,
-        message: "Join code failed to generate",
-      };
+      if (!joinCode) {
+        return {
+          success: false,
+          message: "Join code failed to generate",
+        };
+      }
     }
 
     // create group
@@ -45,6 +50,8 @@ export const createGroup = mutation({
       name: args.name,
       adminIds: [args.userId],
       joinCode: joinCode,
+      allowJoin: args.allowJoin,
+      maxBookings: args.maxBookings,
     });
 
     // create group member
@@ -150,6 +157,23 @@ export const addAdmin = mutation({
       adminIds: [...group.adminIds, args.userId],
     });
     return { success: true, message: "Admin added" };
+  },
+});
+
+export const updateMaxBookings = mutation({
+  args: {
+    groupId: v.id("groups"),
+    maxBookings: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const group = await ctx.db.get(args.groupId);
+    if (!group) {
+      return { success: false, message: "Group not found" };
+    }
+    await ctx.db.patch(args.groupId, {
+      maxBookings: args.maxBookings,
+    });
+    return { success: true, message: "Max bookings updated" };
   },
 });
 
