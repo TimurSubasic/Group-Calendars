@@ -7,6 +7,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import * as Clipboard from "expo-clipboard";
 import Loading from "@/components/Loading";
 import Toast, { BaseToast } from "react-native-toast-message";
+import { useUser } from "@clerk/clerk-expo";
+import { isAdmin } from "./../../convex/groups";
 
 export default function Members() {
   const { groupId } = useGroup();
@@ -18,6 +20,22 @@ export default function Members() {
   const group = useQuery(api.groups.getById, {
     groupId: groupId as Id<"groups">,
   });
+
+  const { user } = useUser();
+
+  const clerkId = user?.id as string;
+
+  const fullUser = useQuery(
+    api.users.getUserByClerk,
+    clerkId ? { clerkId } : "skip"
+  );
+
+  const isAdmin = useQuery(
+    api.groups.isAdmin,
+    fullUser
+      ? { userId: fullUser._id, groupId: groupId as Id<"groups"> }
+      : "skip"
+  );
 
   const toastConfig = {
     success: (props: any) => (
@@ -43,7 +61,7 @@ export default function Members() {
     });
   };
 
-  if (group === undefined || members === undefined) {
+  if (group === undefined || members === undefined || isAdmin === undefined) {
     return <Loading />;
   }
 
@@ -82,18 +100,31 @@ export default function Members() {
       </View>
 
       {/* buttons */}
-      {group?.allowJoin && (
-        <View className="w-full flex flex-row items-center justify-center gap-3 border-t-2 border-slate-800 pt-4 p-5">
+      <View className="w-full flex flex-col items-center justify-center gap-3 border-t-2 border-slate-800 pt-4 p-5">
+        {group?.allowJoin && (
           <TouchableOpacity
             onPress={handleAdd}
-            className="flex-1 flex-row items-center justify-center rounded-lg bg-slate-800 p-5"
+            className="w-full flex-row items-center justify-center rounded-lg bg-slate-800 p-5"
           >
             <Text className="text-white font-bold text-xl text-center">
               Add Members
             </Text>
           </TouchableOpacity>
-        </View>
-      )}
+        )}
+
+        {isAdmin && (
+          <TouchableOpacity
+            onPress={() => {
+              /* leave group */
+            }}
+            className="w-full rounded-lg bg-red-600 p-5"
+          >
+            <Text className="text-white font-bold text-xl text-center">
+              Kick Members
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
 
       <Toast config={toastConfig} />
     </View>

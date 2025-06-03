@@ -4,6 +4,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Switch,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
@@ -15,7 +16,7 @@ import Loading from "@/components/Loading";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 export default function Settings() {
-  const { groupId, groupName } = useGroup();
+  const { groupId, groupName, setGroupName } = useGroup();
 
   const { user } = useUser();
 
@@ -43,39 +44,56 @@ export default function Settings() {
     groupId ? { groupId: groupId as Id<"groups"> } : "skip"
   );
 
+  const updateMaxBookings = useMutation(api.groups.updateMaxBookings);
+
+  const updateAllowJoin = useMutation(api.groups.updateAllowJoin);
+
+  const changeName = useMutation(api.groups.changeName);
+
   const [name, setName] = useState("");
 
   const [maxBookings, setMaxBookings] = useState<number>(1);
 
+  const [allowJoin, setAllowJoin] = useState<boolean>(false);
+
   const handlePlus = () => {
     if (maxBookings < 10) {
+      updateMaxBookings({
+        groupId: groupId as Id<"groups">,
+        maxBookings: maxBookings + 1,
+      });
       setMaxBookings(maxBookings + 1);
     }
   };
 
   const handleMinus = () => {
     if (maxBookings > 1) {
+      updateMaxBookings({
+        groupId: groupId as Id<"groups">,
+        maxBookings: maxBookings - 1,
+      });
       setMaxBookings(maxBookings - 1);
     }
   };
 
-  const updateMaxBookings = useMutation(api.groups.updateMaxBookings);
-
-  useEffect(() => {
-    if (maxBookings !== group?.maxBookings) {
-      updateMaxBookings({
+  const handleNameChange = async () => {
+    if (name.trim().length >= 2) {
+      const result = await changeName({
         groupId: groupId as Id<"groups">,
-        maxBookings: maxBookings,
+        name: name,
       });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [maxBookings]);
 
-  const handleNameChange = () => {};
+      if (result.success) {
+        setGroupName(name);
+        setName("");
+      }
+    }
+  };
 
   useEffect(() => {
     if (group !== undefined) {
       setMaxBookings(group!.maxBookings);
+      setAllowJoin(group!.allowJoin);
     }
   }, [group]);
 
@@ -152,7 +170,7 @@ export default function Settings() {
                 </Text>
               </TouchableOpacity>
 
-              <View className="flex w-full flex-row items-center justify-between">
+              <View className="flex w-full flex-row items-center justify-between my-5">
                 <Text className="text-xl font-semibold">
                   Bookings per Member:
                 </Text>
@@ -176,6 +194,26 @@ export default function Settings() {
                     <FontAwesome5 name="plus" size={20} color={"#1e293b"} />
                   </TouchableOpacity>
                 </View>
+              </View>
+
+              <View className="flex w-full flex-row items-center justify-between my-5">
+                <Text className="text-xl font-semibold">
+                  Allow Members to Join:
+                </Text>
+
+                <Switch
+                  value={allowJoin}
+                  trackColor={{ false: "#d1d5db", true: "#64748b" }}
+                  thumbColor={allowJoin ? "#1e293b" : "#6b7280"}
+                  onValueChange={() => {
+                    updateAllowJoin({
+                      groupId: groupId as Id<"groups">,
+                      allowJoin: !allowJoin,
+                    });
+                    setAllowJoin(!allowJoin);
+                  }}
+                  style={{ transform: [{ scaleX: 1.3 }, { scaleY: 1.3 }] }}
+                />
               </View>
             </View>
           ) : (
@@ -208,19 +246,6 @@ export default function Settings() {
 
           {/* leave group btn */}
           <View className="w-full flex flex-col items-center justify-center gap-5 mt-10">
-            {isAdmin && (
-              <TouchableOpacity
-                onPress={() => {
-                  /* leave group */
-                }}
-                className="w-full rounded-lg bg-red-600 p-5"
-              >
-                <Text className="text-white font-bold text-xl text-center">
-                  Kick Members
-                </Text>
-              </TouchableOpacity>
-            )}
-
             <TouchableOpacity
               onPress={() => {
                 /* leave group */

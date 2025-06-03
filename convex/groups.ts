@@ -139,6 +139,23 @@ export const isAdmin = query({
   },
 });
 
+export const changeName = mutation({
+  args: {
+    groupId: v.id("groups"),
+    name: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const group = await ctx.db.get(args.groupId);
+    if (!group) {
+      return { success: false, message: "Group not found" };
+    }
+    await ctx.db.patch(args.groupId, {
+      name: args.name,
+    });
+    return { success: true, message: "Name updated" };
+  },
+});
+
 export const addAdmin = mutation({
   args: {
     groupId: v.id("groups"),
@@ -174,6 +191,51 @@ export const updateMaxBookings = mutation({
       maxBookings: args.maxBookings,
     });
     return { success: true, message: "Max bookings updated" };
+  },
+});
+
+export const updateAllowJoin = mutation({
+  args: {
+    groupId: v.id("groups"),
+    allowJoin: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const group = await ctx.db.get(args.groupId);
+    if (!group) {
+      return { success: false, message: "Group not found" };
+    }
+
+    let joinCode = undefined;
+    let existing;
+
+    if (args.allowJoin) {
+      // Try max 10 times to find a unique code
+      for (let i = 0; i < 10; i++) {
+        const code = generateJoinCode().toUpperCase();
+        existing = await ctx.db
+          .query("groups")
+          .withIndex("by_join_code", (q) => q.eq("joinCode", code))
+          .first();
+
+        if (!existing) {
+          joinCode = code;
+          break;
+        }
+      }
+
+      if (!joinCode) {
+        return {
+          success: false,
+          message: "Join code failed to generate",
+        };
+      }
+    }
+
+    await ctx.db.patch(args.groupId, {
+      joinCode: joinCode,
+      allowJoin: args.allowJoin,
+    });
+    return { success: true, message: "Allow join updated" };
   },
 });
 

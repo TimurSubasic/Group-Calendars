@@ -46,19 +46,6 @@ const Settings = () => {
   }, [segments]);
 
   // show and hide log out
-  const [logOutVisible, setLogOutVisible] = useState(false);
-  const showLogOut = () => {
-    setLogOutVisible(true);
-  };
-  const handleLogOutCancel = () => {
-    setLogOutVisible(false);
-  };
-
-  // handle log out on confirmation
-  const handleLogOut = () => {
-    signOut();
-    setLogOutVisible(false);
-  };
 
   // handle username change
 

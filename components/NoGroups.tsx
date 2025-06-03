@@ -6,7 +6,6 @@ import { useMutation, useQuery } from "convex/react";
 import React, { useEffect, useState } from "react";
 import {
   Modal,
-  Platform,
   ScrollView,
   Switch,
   Text,
@@ -16,7 +15,6 @@ import {
 } from "react-native";
 import { BlurView } from "expo-blur";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Picker } from "@react-native-picker/picker";
 
 const NoGroups = () => {
   const { user } = useUser();
