@@ -250,11 +250,27 @@ export const deleteGroup = mutation({
       .withIndex("by_group_id", (q) => q.eq("groupId", args.groupId))
       .collect();
 
+    if (!members) {
+      return { success: false, message: "No members found" };
+    }
+
     for (const member of members) {
       await ctx.db.delete(member._id);
     }
 
+    // get all bookings with this groupId
+    const bookings = await ctx.db
+      .query("bookings")
+      .withIndex("by_group_id", (q) => q.eq("groupId", args.groupId))
+      .collect();
+
+    for (const booking of bookings) {
+      await ctx.db.delete(booking._id);
+    }
+
     // Delete the group itself
     await ctx.db.delete(args.groupId);
+
+    return { success: true, message: "Group deleted" };
   },
 });

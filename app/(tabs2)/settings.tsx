@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   TextInput,
   Switch,
+  Modal,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
@@ -14,8 +15,11 @@ import { useGroup } from "@/contexts/GroupContext";
 import { Id } from "@/convex/_generated/dataModel";
 import Loading from "@/components/Loading";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { useRouter } from "expo-router";
+import { BlurView } from "expo-blur";
 
 export default function Settings() {
+  const router = useRouter();
   const { groupId, groupName, setGroupName } = useGroup();
 
   const { user } = useUser();
@@ -52,26 +56,39 @@ export default function Settings() {
 
   const [name, setName] = useState("");
 
-  const [maxBookings, setMaxBookings] = useState<number>(1);
-
   const [allowJoin, setAllowJoin] = useState<boolean>(false);
+
+  const [maxBookings, setMaxBookings] = useState<number>(1);
+  const [debouncedMaxBookings, setDebouncedMaxBookings] = useState<number>(1);
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedMaxBookings(maxBookings);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [maxBookings]);
+
+  // Effect to update database when debounced value changes
+  useEffect(() => {
+    if (group && debouncedMaxBookings !== group.maxBookings) {
+      updateMaxBookings({
+        groupId: groupId as Id<"groups">,
+        maxBookings: debouncedMaxBookings,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedMaxBookings, group]);
 
   const handlePlus = () => {
     if (maxBookings < 10) {
-      updateMaxBookings({
-        groupId: groupId as Id<"groups">,
-        maxBookings: maxBookings + 1,
-      });
       setMaxBookings(maxBookings + 1);
     }
   };
 
   const handleMinus = () => {
     if (maxBookings > 1) {
-      updateMaxBookings({
-        groupId: groupId as Id<"groups">,
-        maxBookings: maxBookings - 1,
-      });
       setMaxBookings(maxBookings - 1);
     }
   };
@@ -92,10 +109,37 @@ export default function Settings() {
 
   useEffect(() => {
     if (group !== undefined) {
-      setMaxBookings(group!.maxBookings);
-      setAllowJoin(group!.allowJoin);
+      setMaxBookings(group?.maxBookings as number);
+      setAllowJoin(group?.allowJoin as boolean);
     }
   }, [group]);
+
+  const removeMember = useMutation(api.groupMembers.removeMember);
+
+  const handleLeave = async () => {
+    const result = await removeMember({
+      groupId: groupId as Id<"groups">,
+      userId: fullUser?._id as Id<"users">,
+    });
+
+    if (result.success) {
+      router.replace("/(tabs1)");
+    }
+  };
+
+  const [modalDelete, setModalDelete] = useState(false);
+
+  const deleteGroup = useMutation(api.groups.deleteGroup);
+
+  const handleDelete = async () => {
+    const result = await deleteGroup({
+      groupId: groupId as Id<"groups">,
+    });
+
+    if (result.success) {
+      router.replace("/(tabs1)");
+    }
+  };
 
   if (isAdmin === undefined || admins === undefined || group === undefined) {
     return <Loading />;
@@ -148,12 +192,26 @@ export default function Settings() {
                   {admins?.map((admin, index) => (
                     <View
                       key={index}
-                      className={` w-full flex items-start justify-start `}
-                      style={{ backgroundColor: admin?.color as string }}
+                      className="w-full flex items-center justify-between flex-row"
                     >
-                      <Text className="font-semibold text-xl bg-white p-5 w-[45%] rounded-r-full">
-                        {admin?.username}
-                      </Text>
+                      <View className="flex flex-row items-center justify-center gap-3">
+                        <View
+                          style={{ backgroundColor: admin?.color as string }}
+                          className="w-[50px] h-[50px] rounded-full flex items-center justify-center"
+                        >
+                          <Text className="text-white text-2xl font-bold">
+                            {admin?.username?.slice(0, 1).toUpperCase()}
+                          </Text>
+                        </View>
+                        <Text className="font-semibold text-xl bg-white p-5 w-[45%] rounded-r-full">
+                          {admin?.username}
+                        </Text>
+                      </View>
+
+                      <View
+                        style={{ backgroundColor: admin?.color as string }}
+                        className="p-2.5 mr-5 rounded-full"
+                      />
                     </View>
                   ))}
                 </View>
@@ -247,9 +305,7 @@ export default function Settings() {
           {/* leave group btn */}
           <View className="w-full flex flex-col items-center justify-center gap-5 mt-10">
             <TouchableOpacity
-              onPress={() => {
-                /* leave group */
-              }}
+              onPress={handleLeave}
               className="w-full rounded-lg bg-red-600 p-5"
             >
               <Text className="text-white font-bold text-xl text-center">
@@ -260,7 +316,7 @@ export default function Settings() {
             {isAdmin && (
               <TouchableOpacity
                 onPress={() => {
-                  /* leave group */
+                  setModalDelete(true);
                 }}
                 className="w-full rounded-lg bg-red-600 p-5"
               >
@@ -272,6 +328,57 @@ export default function Settings() {
           </View>
         </View>
       </View>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalDelete}
+        onRequestClose={() => {
+          setModalDelete(false);
+        }}
+      >
+        <BlurView
+          intensity={100}
+          tint="dark"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+        <View className="flex-1 flex items-center justify-center">
+          <View className="w-[80%] -mt-[10%] bg-white rounded-xl p-5 ">
+            <Text className="text-2xl font-bold text-center">
+              Delete This Group
+            </Text>
+
+            <Text className="text-lg font-semibold text-center">
+              This action can not be undone
+            </Text>
+
+            <View className="flex flex-row w-full mt-10 gap-3">
+              <TouchableOpacity
+                onPress={() => setModalDelete(false)}
+                className="p-5 bg-slate-800 rounded-lg flex-1"
+              >
+                <Text className="text-center text-white font-bold text-xl ">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleDelete}
+                className="p-5 bg-red-600 rounded-lg flex-1"
+              >
+                <Text className="text-center text-white font-bold text-xl ">
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }

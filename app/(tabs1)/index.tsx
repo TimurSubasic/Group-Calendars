@@ -16,10 +16,8 @@ import { api } from "@/convex/_generated/api";
 import Loading from "@/components/Loading";
 import NoGroups from "@/components/NoGroups";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import Dialog from "react-native-dialog";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Id } from "@/convex/_generated/dataModel";
-import { Picker } from "@react-native-picker/picker";
 import { BlurView } from "expo-blur";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
@@ -108,21 +106,9 @@ export default function Index() {
     finalCode ? { joinCode: finalCode } : "skip"
   );
 
-  const [visibleJoin, setVisibleJoin] = useState(false);
-
   const [body, setBody] = useState("Enter join code");
 
   // const joinGroup = useMutation(api.groupMembers.joinGroup);
-
-  const showDialogJoin = () => {
-    setVisibleJoin(true);
-  };
-
-  const handleCancelJoin = () => {
-    setVisibleJoin(false);
-    setCode("");
-    setBody("Enter join code");
-  };
 
   const addMember = useMutation(api.groupMembers.addMember);
 
@@ -140,6 +126,7 @@ export default function Index() {
         groupId: group.groupId as Id<"groups">,
         userId: fullUser!._id,
       });
+      setModalJoin(false);
     } else {
       setBody(group?.message as string);
     }
@@ -255,7 +242,7 @@ export default function Index() {
                 defaultValue={name}
               />
 
-              <View className="flex w-full flex-row items-center justify-between">
+              <View className="flex w-full flex-row items-center justify-between my-5">
                 <Text className="text-xl font-semibold">
                   Bookins per Member:
                 </Text>
@@ -281,7 +268,7 @@ export default function Index() {
                 </View>
               </View>
 
-              <View className="flex w-full flex-row items-center justify-between">
+              <View className="flex w-full flex-row items-center justify-between my-5">
                 <Text className="text-xl font-semibold">
                   Allow Members to Join:
                 </Text>

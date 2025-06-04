@@ -80,16 +80,30 @@ export default function Members() {
                 Members
               </Text>
 
-              <View className="flex flex-col items-center justify-center gap-5 my-3 mb-10">
-                {members?.map((users, index) => (
+              <View className="w-full flex flex-col items-center justify-center gap-5 my-3 mb-10">
+                {members?.map((user, index) => (
                   <View
                     key={index}
-                    className={` w-full flex items-start justify-start `}
-                    style={{ backgroundColor: users.color as string }}
+                    className="w-full flex items-center justify-between flex-row"
                   >
-                    <Text className="font-semibold text-xl bg-white p-5 w-[45%] rounded-r-full">
-                      {users.username}
-                    </Text>
+                    <View className="flex flex-row items-center justify-center gap-3">
+                      <View
+                        style={{ backgroundColor: user.color as string }}
+                        className="w-[50px] h-[50px] rounded-full flex items-center justify-center"
+                      >
+                        <Text className="text-white text-2xl font-bold">
+                          {user.username?.slice(0, 1).toUpperCase()}
+                        </Text>
+                      </View>
+                      <Text className="font-semibold text-xl bg-white p-5 w-[45%] rounded-r-full">
+                        {user.username}
+                      </Text>
+                    </View>
+
+                    <View
+                      style={{ backgroundColor: user.color as string }}
+                      className="p-2.5 mr-5 rounded-full"
+                    />
                   </View>
                 ))}
               </View>
