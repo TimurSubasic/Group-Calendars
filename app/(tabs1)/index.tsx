@@ -127,6 +127,7 @@ export default function Index() {
         userId: fullUser!._id,
       });
       setModalJoin(false);
+      setCode("");
     } else {
       setBody(group?.message as string);
     }
@@ -207,96 +208,102 @@ export default function Index() {
           setModalCreate(false);
         }}
       >
-        <BlurView
-          intensity={100}
-          tint="dark"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-        />
-        <View className="flex-1 flex items-center justify-center">
-          <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
-            <View className="flex flex-row items-center justify-between">
-              <Text className="font-bold text-2xl">Create a Group</Text>
-              <TouchableOpacity onPress={() => setModalCreate(false)}>
-                <MaterialIcons name="cancel" size={30} color="gray" />
-              </TouchableOpacity>
-            </View>
-
-            <View className="flex flex-col w-full items-start justify-center gap-5 my-10">
-              <View className="flex w-full flex-row items-center justify-between">
-                <Text className="text-xl font-semibold">Enter Name:</Text>
-                <Text className="text-red-500 font-semibold text-md">
-                  {hasName ? "" : "Not Valid"}
-                </Text>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          scrollEnabled={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <BlurView
+            intensity={100}
+            tint="dark"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          />
+          <View className="flex-1 flex items-center justify-center">
+            <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
+              <View className="flex flex-row items-center justify-between">
+                <Text className="font-bold text-2xl">Create a Group</Text>
+                <TouchableOpacity onPress={() => setModalCreate(false)}>
+                  <MaterialIcons name="cancel" size={30} color="gray" />
+                </TouchableOpacity>
               </View>
-              <TextInput
-                className="p-5 border border-slate-600 rounded-lg w-full "
-                placeholder="Group Name"
-                placeholderTextColor={"#475569"}
-                onChangeText={(newText) => setName(newText)}
-                defaultValue={name}
-              />
 
-              <View className="flex w-full flex-row items-center justify-between my-5">
-                <Text className="text-xl font-semibold">
-                  Bookins per Member:
-                </Text>
+              <View className="flex flex-col w-full items-start justify-center gap-5 my-10">
+                <View className="flex w-full flex-row items-center justify-between">
+                  <Text className="text-xl font-semibold">Enter Name:</Text>
+                  <Text className="text-red-500 font-semibold text-md">
+                    {hasName ? "" : "Not Valid"}
+                  </Text>
+                </View>
+                <TextInput
+                  className="p-5 border border-slate-600 rounded-lg w-full "
+                  placeholder="Group Name"
+                  placeholderTextColor={"#475569"}
+                  onChangeText={(newText) => setName(newText)}
+                  defaultValue={name}
+                />
 
-                <View className="flex flex-row items-center justify-center border border-slate-600 rounded-lg">
-                  <TouchableOpacity
-                    onPress={handleMinus}
-                    className="border-r border-slate-600 p-2 "
-                  >
-                    <FontAwesome5 name="minus" size={20} color={"#1e293b"} />
-                  </TouchableOpacity>
-
-                  <Text className="text-xl font-semibold w-10 text-center">
-                    {maxBookings}
+                <View className="flex w-full flex-row items-center justify-between my-5">
+                  <Text className="text-xl font-semibold">
+                    Bookins per Member:
                   </Text>
 
-                  <TouchableOpacity
-                    onPress={handlePlus}
-                    className="border-l border-slate-600 p-2"
-                  >
-                    <FontAwesome5 name="plus" size={20} color={"#1e293b"} />
-                  </TouchableOpacity>
+                  <View className="flex flex-row items-center justify-center border border-slate-600 rounded-lg">
+                    <TouchableOpacity
+                      onPress={handleMinus}
+                      className="border-r border-slate-600 p-2 "
+                    >
+                      <FontAwesome5 name="minus" size={20} color={"#1e293b"} />
+                    </TouchableOpacity>
+
+                    <Text className="text-xl font-semibold w-10 text-center">
+                      {maxBookings}
+                    </Text>
+
+                    <TouchableOpacity
+                      onPress={handlePlus}
+                      className="border-l border-slate-600 p-2"
+                    >
+                      <FontAwesome5 name="plus" size={20} color={"#1e293b"} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View className="flex w-full flex-row items-center justify-between my-5">
+                  <Text className="text-xl font-semibold">
+                    Allow Members to Join:
+                  </Text>
+
+                  <Switch
+                    value={allowJoin}
+                    trackColor={{ false: "#d1d5db", true: "#64748b" }}
+                    thumbColor={allowJoin ? "#1e293b" : "#6b7280"}
+                    onValueChange={() => setAllowJoin(!allowJoin)}
+                    style={{ transform: [{ scaleX: 1.3 }, { scaleY: 1.3 }] }}
+                  />
                 </View>
               </View>
 
-              <View className="flex w-full flex-row items-center justify-between my-5">
-                <Text className="text-xl font-semibold">
-                  Allow Members to Join:
-                </Text>
-
-                <Switch
-                  value={allowJoin}
-                  trackColor={{ false: "#d1d5db", true: "#64748b" }}
-                  thumbColor={allowJoin ? "#1e293b" : "#6b7280"}
-                  onValueChange={() => setAllowJoin(!allowJoin)}
-                  style={{ transform: [{ scaleX: 1.3 }, { scaleY: 1.3 }] }}
-                />
-              </View>
-            </View>
-
-            <Text className="text-center text-slate-600 font-bold text-md mt-10 mb-5">
-              Settings can be changed later
-            </Text>
-
-            <TouchableOpacity
-              onPress={handleCreate}
-              className="w-full rounded-lg bg-slate-800 p-5"
-            >
-              <Text className="text-white font-bold text-xl text-center">
-                Create
+              <Text className="text-center text-slate-600 font-bold text-md mt-10 mb-5">
+                Settings can be changed later
               </Text>
-            </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleCreate}
+                className="w-full rounded-lg bg-slate-800 p-5"
+              >
+                <Text className="text-white font-bold text-xl text-center">
+                  Create
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </ScrollView>
       </Modal>
 
       <Modal
@@ -322,7 +329,12 @@ export default function Index() {
           <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
             <View className="flex flex-row items-center justify-between">
               <Text className="font-bold text-2xl">Join Via Code</Text>
-              <TouchableOpacity onPress={() => setModalJoin(false)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setModalJoin(false);
+                  setCode("");
+                }}
+              >
                 <MaterialIcons name="cancel" size={30} color="gray" />
               </TouchableOpacity>
             </View>

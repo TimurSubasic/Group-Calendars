@@ -5,6 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { useSegments } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  Keyboard,
   Modal,
   ScrollView,
   Text,
@@ -58,6 +59,7 @@ const Settings = () => {
         username: text,
       });
       setText("");
+      Keyboard.dismiss();
     }
   };
 

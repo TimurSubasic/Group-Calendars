@@ -30,7 +30,7 @@ export default function TabLayout() {
     clerkId ? { clerkId } : "skip"
   );
 
-  const group = useQuery(
+  const groupFound = useQuery(
     api.groupMembers.findGroup,
     fullUser
       ? {
@@ -40,13 +40,21 @@ export default function TabLayout() {
       : "skip"
   );
 
+  const group = useQuery(api.groups.getById, {
+    groupId: groupId as Id<"groups">,
+  });
+
   useEffect(() => {
-    if (group?.found === false) {
+    if (group && group.name !== groupName) {
+      setGroupName(group.name);
+    }
+    if (groupFound?.found === false) {
       router.replace("/(tabs1)");
     }
-  }, [group, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupFound, group]);
 
-  if (group === undefined) {
+  if (groupFound === undefined || group === undefined) {
     return <Loading />;
   }
 

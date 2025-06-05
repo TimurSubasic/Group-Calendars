@@ -150,7 +150,7 @@ export default function Members() {
           }}
         />
         <View className="flex-1 flex items-center justify-center">
-          <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
+          <View className="w-[90%] max-h-[80%] -mt-[10%] bg-white rounded-xl p-5 ">
             <View className="flex flex-row items-center justify-between">
               <Text className="font-bold text-2xl">Kick Members</Text>
               <TouchableOpacity onPress={() => setModal(false)}>

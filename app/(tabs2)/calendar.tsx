@@ -15,8 +15,9 @@ import { Id } from "@/convex/_generated/dataModel";
 import Loading from "@/components/Loading";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useUser } from "@clerk/clerk-expo";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import AntDesign from "@expo/vector-icons/AntDesign";
 import { BlurView } from "expo-blur";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 interface MarkedDates {
   [date: string]: {
@@ -184,6 +185,8 @@ export default function Bookings() {
 
       setModalSave(false);
 
+      setNote("");
+
       if (!booking.success) {
         // setVisible(true);
       }
@@ -229,7 +232,15 @@ export default function Bookings() {
             style={{
               backgroundColor: "transparent",
             }}
-            enableSwipeMonths={true}
+            renderArrow={(direction) => {
+              return (
+                <AntDesign
+                  size={35}
+                  name={direction === "left" ? "leftcircle" : "rightcircle"}
+                  color="#1e293b"
+                />
+              );
+            }}
             onDayPress={handleDayPress}
             markedDates={localMarkedDates}
             markingType="period"

@@ -383,7 +383,7 @@ export default function Settings() {
           }}
         />
         <View className="flex-1 flex items-center justify-center">
-          <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
+          <View className="w-[90%] max-h-[80%] -mt-[10%] bg-white rounded-xl p-5 ">
             <View className="flex flex-row items-center justify-between">
               <Text className="font-bold text-2xl">Add Admins</Text>
               <TouchableOpacity onPress={() => setModalAddAdmin(false)}>
@@ -396,9 +396,14 @@ export default function Settings() {
                 No members to add as admins
               </Text>
             ) : (
-              <Text className="text-center text-gray-500 text-lg mt-5">
-                Press and hold to add as admin
-              </Text>
+              <View>
+                <Text className="text-center text-gray-500 text-lg mt-5">
+                  Press and hold to add as admin
+                </Text>
+                <Text className="text-center text-gray-500 text-lg">
+                  Admins can not be removed
+                </Text>
+              </View>
             )}
 
             <ScrollView
