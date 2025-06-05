@@ -63,17 +63,25 @@ const Settings = () => {
 
   const changeColor = useMutation(api.users.changeColor);
 
+  const [debouncedColor, setDebouncedColor] = useState(pickedColor);
+
   useEffect(() => {
-    if (segments[0] === "(tabs1)" && segments[1] !== "settings") {
-      if (fullUser!.color !== pickedColor) {
-        changeColor({
-          id: fullUser!._id,
-          color: pickedColor!,
-        });
-      }
+    const timer = setTimeout(() => {
+      setDebouncedColor(pickedColor);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [pickedColor]);
+
+  useEffect(() => {
+    if (debouncedColor !== fullUser?.color) {
+      changeColor({
+        id: fullUser!._id,
+        color: debouncedColor!,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [segments]);
+  }, [debouncedColor, fullUser]);
 
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -92,9 +100,13 @@ const Settings = () => {
           <View className="w-full flex flex-row items-center justify-between mb-10 mt-5">
             <Text className="text-xl font-bold">Welcome, {username} </Text>
             <View
-              className="h-12 w-12 rounded-full"
               style={{ backgroundColor: pickedColor }}
-            />
+              className="w-14 h-14 rounded-full flex items-center justify-center"
+            >
+              <Text className="text-white text-2xl font-bold">
+                {fullUser?.username?.slice(0, 1).toUpperCase()}
+              </Text>
+            </View>
           </View>
 
           <View className="flex flex-col items-center justify-center gap-10 w-full">

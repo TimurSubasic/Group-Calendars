@@ -1,6 +1,4 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Tabs, useRouter } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
 import { useGroup } from "@/contexts/GroupContext";
@@ -9,6 +7,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import { api } from "@/convex/_generated/api";
 import { useUser } from "@clerk/clerk-expo";
 import Loading from "@/components/Loading";
+import { useEffect } from "react";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 export default function TabLayout() {
   const { groupId, groupName, setGroupId, setGroupName } = useGroup();
@@ -40,12 +40,14 @@ export default function TabLayout() {
       : "skip"
   );
 
+  useEffect(() => {
+    if (group?.found === false) {
+      router.replace("/(tabs1)");
+    }
+  }, [group, router]);
+
   if (group === undefined) {
     return <Loading />;
-  }
-
-  if (group.found === false) {
-    router.replace("/(tabs1)");
   }
 
   return (
@@ -100,7 +102,7 @@ export default function TabLayout() {
           options={{
             title: "Members",
             tabBarIcon: ({ color }) => (
-              <FontAwesome6 size={24} name="users" color={color} />
+              <FontAwesome5 size={24} name="users" color={color} />
             ),
           }}
         />
@@ -109,7 +111,7 @@ export default function TabLayout() {
           options={{
             title: "Settings",
             tabBarIcon: ({ color }) => (
-              <Ionicons size={28} name="settings-sharp" color={color} />
+              <FontAwesome5 size={24} name="cogs" color={color} />
             ),
           }}
         />

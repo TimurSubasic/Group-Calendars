@@ -6,6 +6,7 @@ import {
   TextInput,
   Switch,
   Modal,
+  Pressable,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
@@ -17,6 +18,8 @@ import Loading from "@/components/Loading";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useRouter } from "expo-router";
 import { BlurView } from "expo-blur";
+import MapMembers from "@/components/MapMembers";
+import KickButton from "@/components/KickButton";
 
 export default function Settings() {
   const router = useRouter();
@@ -188,33 +191,7 @@ export default function Settings() {
                   Admins
                 </Text>
 
-                <View className="flex flex-col items-center justify-center gap-5 my-3 mb-10">
-                  {admins?.map((admin, index) => (
-                    <View
-                      key={index}
-                      className="w-full flex items-center justify-between flex-row"
-                    >
-                      <View className="flex flex-row items-center justify-center gap-3">
-                        <View
-                          style={{ backgroundColor: admin?.color as string }}
-                          className="w-[50px] h-[50px] rounded-full flex items-center justify-center"
-                        >
-                          <Text className="text-white text-2xl font-bold">
-                            {admin?.username?.slice(0, 1).toUpperCase()}
-                          </Text>
-                        </View>
-                        <Text className="font-semibold text-xl bg-white p-5 w-[45%] rounded-r-full">
-                          {admin?.username}
-                        </Text>
-                      </View>
-
-                      <View
-                        style={{ backgroundColor: admin?.color as string }}
-                        className="p-2.5 mr-5 rounded-full"
-                      />
-                    </View>
-                  ))}
-                </View>
+                <MapMembers users={admins} />
               </View>
 
               <TouchableOpacity
@@ -285,19 +262,7 @@ export default function Settings() {
                   Admins
                 </Text>
 
-                <View className="flex flex-col items-center justify-center gap-5 my-3 mb-10">
-                  {admins?.map((admin, index) => (
-                    <View
-                      key={index}
-                      className={` w-full flex items-start justify-start `}
-                      style={{ backgroundColor: admin?.color as string }}
-                    >
-                      <Text className="font-semibold text-xl bg-white p-5 w-[45%] rounded-r-full">
-                        {admin?.username}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
+                <MapMembers users={admins} />
               </View>
             </View>
           )}

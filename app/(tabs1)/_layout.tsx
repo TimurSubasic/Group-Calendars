@@ -1,8 +1,7 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Tabs, useSegments } from "expo-router";
 import { Text, View } from "react-native";
 import { useEffect, useState } from "react";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 export default function TabLayout() {
   const segments = useSegments();
@@ -47,7 +46,7 @@ export default function TabLayout() {
           options={{
             title: "Groups",
             tabBarIcon: ({ color }) => (
-              <FontAwesome6 size={24} name="users" color={color} />
+              <FontAwesome5 size={24} name="users" color={color} />
             ),
           }}
         />
@@ -56,7 +55,7 @@ export default function TabLayout() {
           options={{
             title: "Settings",
             tabBarIcon: ({ color }) => (
-              <Ionicons size={28} name="settings-sharp" color={color} />
+              <FontAwesome5 size={24} name="cog" color={color} />
             ),
           }}
         />

@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
-import React from "react";
+import { View, Text, ScrollView, TouchableOpacity, Modal } from "react-native";
+import React, { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useGroup } from "@/contexts/GroupContext";
@@ -8,6 +8,10 @@ import * as Clipboard from "expo-clipboard";
 import Loading from "@/components/Loading";
 import Toast, { BaseToast } from "react-native-toast-message";
 import { useUser } from "@clerk/clerk-expo";
+import MapMembers from "@/components/MapMembers";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { BlurView } from "expo-blur";
+import KickButton from "@/components/KickButton";
 
 export default function Members() {
   const { groupId } = useGroup();
@@ -60,7 +64,18 @@ export default function Members() {
     });
   };
 
-  if (group === undefined || members === undefined || isAdmin === undefined) {
+  const [modal, setModal] = useState(false);
+
+  const nonAdmins = useQuery(api.groupMembers.getNonAdmins, {
+    groupId: groupId as Id<"groups">,
+  });
+
+  if (
+    group === undefined ||
+    members === undefined ||
+    isAdmin === undefined ||
+    nonAdmins === undefined
+  ) {
     return <Loading />;
   }
 
@@ -80,33 +95,7 @@ export default function Members() {
                 Members
               </Text>
 
-              <View className="w-full flex flex-col items-center justify-center gap-5 my-3 mb-10">
-                {members?.map((user, index) => (
-                  <View
-                    key={index}
-                    className="w-full flex items-center justify-between flex-row"
-                  >
-                    <View className="flex flex-row items-center justify-center gap-3">
-                      <View
-                        style={{ backgroundColor: user.color as string }}
-                        className="w-[50px] h-[50px] rounded-full flex items-center justify-center"
-                      >
-                        <Text className="text-white text-2xl font-bold">
-                          {user.username?.slice(0, 1).toUpperCase()}
-                        </Text>
-                      </View>
-                      <Text className="font-semibold text-xl bg-white p-5 w-[45%] rounded-r-full">
-                        {user.username}
-                      </Text>
-                    </View>
-
-                    <View
-                      style={{ backgroundColor: user.color as string }}
-                      className="p-2.5 mr-5 rounded-full"
-                    />
-                  </View>
-                ))}
-              </View>
+              <MapMembers users={members} />
             </View>
           </View>
         </ScrollView>
@@ -128,7 +117,7 @@ export default function Members() {
         {isAdmin && (
           <TouchableOpacity
             onPress={() => {
-              /* leave group */
+              setModal(true);
             }}
             className="w-full rounded-lg bg-red-600 p-5"
           >
@@ -140,6 +129,48 @@ export default function Members() {
       </View>
 
       <Toast config={toastConfig} />
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modal}
+        onRequestClose={() => {
+          setModal(false);
+        }}
+      >
+        <BlurView
+          intensity={100}
+          tint="dark"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+        <View className="flex-1 flex items-center justify-center">
+          <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
+            <View className="flex flex-row items-center justify-between">
+              <Text className="font-semibold text-lg">Kick Members</Text>
+              <TouchableOpacity onPress={() => setModal(false)}>
+                <MaterialIcons name="cancel" size={30} color="gray" />
+              </TouchableOpacity>
+            </View>
+
+            <View className="flex flex-col w-full items-start justify-center gap-5 my-10">
+              {nonAdmins &&
+                nonAdmins.map((user, index) => (
+                  <KickButton
+                    key={index}
+                    user={user}
+                    groupId={groupId as Id<"groups">}
+                  />
+                ))}
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

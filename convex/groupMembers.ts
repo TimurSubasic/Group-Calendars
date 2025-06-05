@@ -69,13 +69,44 @@ export const getMembers = query({
       members.map(async (member) => {
         const user = await ctx.db.get(member.userId);
 
-        return {
-          userId: member.userId,
-          username: user?.username ?? null,
-          color: user?.color ?? null,
-        };
+        return user;
       })
     );
+  },
+});
+
+export const getNonAdmins = query({
+  args: {
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
+    const members = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_group_id", (q) => q.eq("groupId", args.groupId))
+      .collect();
+
+    const group = await ctx.db.get(args.groupId);
+
+    if (!group) {
+      return [];
+    }
+    // Fetch all admin user documents in parallel
+    const admins = await Promise.all(
+      group.adminIds.map((userId) => ctx.db.get(userId))
+    );
+
+    const nonAdmins = members.filter((member) => {
+      const isAdmin = admins.some((admin) => admin?._id === member.userId);
+      return !isAdmin;
+    });
+
+    const nonAdminsWithUser = await Promise.all(
+      nonAdmins.map(async (member) => {
+        const user = await ctx.db.get(member.userId);
+        return user;
+      })
+    );
+    return nonAdminsWithUser;
   },
 });
 
@@ -129,6 +160,20 @@ export const removeMember = mutation({
 
     // Remove the member
     await ctx.db.delete(member._id);
+
+    // Delete all bookings for removed member
+    const bookings = await ctx.db
+      .query("bookings")
+      .withIndex("by_group_and_user", (q) =>
+        q.eq("groupId", args.groupId).eq("userId", args.userId)
+      )
+      .collect();
+
+    if (bookings.length > 0) {
+      for (const booking of bookings) {
+        await ctx.db.delete(booking._id);
+      }
+    }
 
     // Fetch all remaining members in the group, ordered by _creationTime
     const remainingMembers = await ctx.db
