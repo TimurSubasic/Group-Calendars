@@ -52,9 +52,9 @@ const Settings = () => {
   const changeUsername = useMutation(api.users.changeUsername);
 
   const handleUsernameSave = () => {
-    if (text.length >= 2) {
+    if (text.length >= 2 && fullUser !== null && fullUser !== undefined) {
       changeUsername({
-        id: fullUser!._id,
+        id: fullUser._id,
         username: text,
       });
       setText("");
@@ -74,10 +74,15 @@ const Settings = () => {
   }, [pickedColor]);
 
   useEffect(() => {
-    if (debouncedColor !== fullUser?.color) {
+    if (
+      debouncedColor !== fullUser?.color &&
+      fullUser !== null &&
+      fullUser !== undefined &&
+      debouncedColor !== undefined
+    ) {
       changeColor({
-        id: fullUser!._id,
-        color: debouncedColor!,
+        id: fullUser._id,
+        color: debouncedColor,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
