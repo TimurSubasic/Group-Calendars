@@ -1,4 +1,11 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  Modal,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import { Calendar, DateData } from "react-native-calendars";
 import { useGroup } from "@/contexts/GroupContext";
@@ -8,6 +15,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import Loading from "@/components/Loading";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useUser } from "@clerk/clerk-expo";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { BlurView } from "expo-blur";
 
 interface MarkedDates {
   [date: string]: {
@@ -138,17 +147,30 @@ export default function Bookings() {
   };
 
   const [note, setNote] = useState<string | undefined>(undefined);
+  const [modalSave, setModalSave] = useState<boolean>(false);
+
+  const handleModalSave = () => {
+    if (startDate !== "") {
+      setModalSave(true);
+    }
+  };
 
   const createBooking = useMutation(api.bookings.createBooking);
 
   const handleSave = async () => {
     if (startDate) {
+      let myNote = note;
+
+      if (myNote === "") {
+        myNote = undefined;
+      }
+
       const booking = await createBooking({
         startDate: startDate,
         endDate: endDate || startDate, // If no endDate, use startDate
         groupId: groupId as Id<"groups">,
         userId: fullUser!._id,
-        note: note, // add note
+        note: myNote, // add note
       });
 
       setMarkedDates({
@@ -160,10 +182,32 @@ export default function Bookings() {
         },
       });
 
+      setModalSave(false);
+
       if (!booking.success) {
         // setVisible(true);
       }
     }
+  };
+
+  const formatDate = (dateStr: string) => {
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const [, mm, dd] = dateStr.split("-");
+    const monthIndex = parseInt(mm, 10) - 1;
+    return `${monthNames[monthIndex]} ${dd}`;
   };
 
   const handleBookingDelete = () => {};
@@ -198,15 +242,27 @@ export default function Bookings() {
             }}
           />
 
-          <View className="flex w-full items-center justify-center px-5">
+          <View className="flex flex-col gap-5 w-full items-center justify-center px-5 my-5">
             <TouchableOpacity
-              onPress={handleSave}
-              className="w-full my-5 rounded-lg bg-slate-800 p-5"
+              onPress={handleModalSave}
+              className="w-full rounded-lg bg-slate-800 p-5"
             >
               <Text className="text-white font-bold text-xl text-center">
                 Save
               </Text>
             </TouchableOpacity>
+            {userBookings?.length !== 0 ? (
+              <TouchableOpacity
+                onPress={() => handleBookingDelete()}
+                className="p-5 bg-red-600 rounded-lg w-full"
+              >
+                <Text className="text-center text-white font-bold text-xl ">
+                  Delete My Bookings
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <View />
+            )}
           </View>
         </View>
 
@@ -259,30 +315,78 @@ export default function Bookings() {
           </View>
         </View>
 
-        {userBookings?.length !== 0 ? (
-          <TouchableOpacity
-            onPress={() => handleBookingDelete()}
-            className="p-5 bg-red-600 rounded-lg w-full mb-5 mt-10"
-          >
-            <Text className="text-center text-white font-bold text-xl ">
-              Delete Bookings
-            </Text>
-          </TouchableOpacity>
-        ) : (
-          <View />
-        )}
-
         {/* end of p-5 view */}
       </View>
-      {/* 
       <Modal
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        animationType="fade"
         transparent={true}
+        visible={modalSave}
+        onRequestClose={() => {
+          setModalSave(false);
+        }}
       >
-        <View />
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          scrollEnabled={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <BlurView
+            intensity={100}
+            tint="dark"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          />
+          <View className="flex-1 flex items-center justify-center">
+            <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
+              <View className="flex flex-row items-center justify-between">
+                <Text className="font-bold text-2xl">Save Booking</Text>
+                <TouchableOpacity onPress={() => setModalSave(false)}>
+                  <MaterialIcons name="cancel" size={30} color="gray" />
+                </TouchableOpacity>
+              </View>
+
+              <View className="flex flex-row w-full items-center justify-between my-10">
+                <Text className="font-semibold text-2xl ">Date:</Text>
+                <Text className="font-semibold text-2xl ">
+                  {formatDate(startDate)}
+                  {endDate ? ` - ${formatDate(endDate)}` : ""}
+                </Text>
+              </View>
+
+              <View className="flex flex-row w-full items-center justify-between mb-5">
+                <Text className="text-center font-semibold text-lg ">
+                  Add a note
+                </Text>
+
+                <Text className="text-gray-500 text-lg">(optional)</Text>
+              </View>
+
+              <TextInput
+                className="p-5 border border-slate-600 rounded-lg w-full "
+                numberOfLines={15}
+                multiline={true}
+                placeholder="Note"
+                placeholderTextColor={"#475569"}
+                onChangeText={(newText) => setNote(newText)}
+                defaultValue={note}
+              />
+              <TouchableOpacity
+                onPress={handleSave}
+                className="w-full rounded-lg bg-slate-800 p-5 mt-5"
+              >
+                <Text className="text-white font-bold text-xl text-center">
+                  Save
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
       </Modal>
-      */}
     </ScrollView>
   );
 }

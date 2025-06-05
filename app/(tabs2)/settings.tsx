@@ -6,7 +6,6 @@ import {
   TextInput,
   Switch,
   Modal,
-  Pressable,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
@@ -19,7 +18,8 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useRouter } from "expo-router";
 import { BlurView } from "expo-blur";
 import MapMembers from "@/components/MapMembers";
-import KickButton from "@/components/KickButton";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import AdminButton from "@/components/AdminButton";
 
 export default function Settings() {
   const router = useRouter();
@@ -61,21 +61,27 @@ export default function Settings() {
 
   const [allowJoin, setAllowJoin] = useState<boolean>(false);
 
-  const [maxBookings, setMaxBookings] = useState<number>(1);
-  const [debouncedMaxBookings, setDebouncedMaxBookings] = useState<number>(1);
+  const [maxBookings, setMaxBookings] = useState<number | undefined>(undefined);
+  const [debouncedMaxBookings, setDebouncedMaxBookings] = useState<
+    number | undefined
+  >(undefined);
 
   // Debounce effect
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedMaxBookings(maxBookings);
-    }, 500);
+    }, 700);
 
     return () => clearTimeout(timer);
   }, [maxBookings]);
 
   // Effect to update database when debounced value changes
   useEffect(() => {
-    if (group && debouncedMaxBookings !== group.maxBookings) {
+    if (
+      group &&
+      debouncedMaxBookings &&
+      debouncedMaxBookings !== group.maxBookings
+    ) {
       updateMaxBookings({
         groupId: groupId as Id<"groups">,
         maxBookings: debouncedMaxBookings,
@@ -85,13 +91,13 @@ export default function Settings() {
   }, [debouncedMaxBookings, group]);
 
   const handlePlus = () => {
-    if (maxBookings < 10) {
+    if (maxBookings && maxBookings < 10) {
       setMaxBookings(maxBookings + 1);
     }
   };
 
   const handleMinus = () => {
-    if (maxBookings > 1) {
+    if (maxBookings && maxBookings > 1) {
       setMaxBookings(maxBookings - 1);
     }
   };
@@ -144,7 +150,19 @@ export default function Settings() {
     }
   };
 
-  if (isAdmin === undefined || admins === undefined || group === undefined) {
+  const [modalAddAdmin, setModalAddAdmin] = useState(false);
+
+  const nonAdmins = useQuery(
+    api.groupMembers.getNonAdmins,
+    groupId ? { groupId: groupId as Id<"groups"> } : "skip"
+  );
+
+  if (
+    isAdmin === undefined ||
+    admins === undefined ||
+    group === undefined ||
+    nonAdmins === undefined
+  ) {
     return <Loading />;
   }
 
@@ -196,7 +214,7 @@ export default function Settings() {
 
               <TouchableOpacity
                 onPress={() => {
-                  /* show members modal */
+                  setModalAddAdmin(true);
                 }}
                 className="w-full rounded-lg bg-slate-800 p-5"
               >
@@ -319,7 +337,7 @@ export default function Settings() {
               Delete This Group
             </Text>
 
-            <Text className="text-lg font-semibold text-center">
+            <Text className="text-lg font-semibold text-gray-500 text-center">
               This action can not be undone
             </Text>
 
@@ -341,6 +359,63 @@ export default function Settings() {
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalAddAdmin}
+        onRequestClose={() => {
+          setModalAddAdmin(false);
+        }}
+      >
+        <BlurView
+          intensity={100}
+          tint="dark"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+        <View className="flex-1 flex items-center justify-center">
+          <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
+            <View className="flex flex-row items-center justify-between">
+              <Text className="font-bold text-2xl">Add Admins</Text>
+              <TouchableOpacity onPress={() => setModalAddAdmin(false)}>
+                <MaterialIcons name="cancel" size={30} color="gray" />
+              </TouchableOpacity>
+            </View>
+
+            {nonAdmins.length === 0 ? (
+              <Text className="text-center text-gray-500 text-lg mt-5">
+                No members to add as admins
+              </Text>
+            ) : (
+              <Text className="text-center text-gray-500 text-lg mt-5">
+                Press and hold to add as admin
+              </Text>
+            )}
+
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ flexGrow: 1 }}
+            >
+              <View className="flex flex-col w-full items-start justify-center gap-5 my-10">
+                {nonAdmins &&
+                  nonAdmins.map((user, index) => (
+                    <AdminButton
+                      key={index}
+                      user={user}
+                      groupId={groupId as Id<"groups">}
+                    />
+                  ))}
+              </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>

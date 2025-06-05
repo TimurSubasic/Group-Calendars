@@ -196,8 +196,10 @@ const Settings = () => {
         />
         <View className="flex-1 flex items-center justify-center">
           <View className="w-[80%] -mt-[10%] bg-white rounded-xl p-5 ">
-            <Text className="text-2xl font-bold text-center">
-              Log Out of your account?
+            <Text className="font-bold text-2xl text-center">Log Out?</Text>
+
+            <Text className="text-center text-gray-500 text-lg mt-2">
+              Are you sure you want to log out?
             </Text>
 
             <View className="flex flex-row w-full mt-10 gap-3">

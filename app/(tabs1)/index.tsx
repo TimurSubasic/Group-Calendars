@@ -221,7 +221,7 @@ export default function Index() {
         <View className="flex-1 flex items-center justify-center">
           <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
             <View className="flex flex-row items-center justify-between">
-              <Text className="font-semibold text-lg">Create a Group</Text>
+              <Text className="font-bold text-2xl">Create a Group</Text>
               <TouchableOpacity onPress={() => setModalCreate(false)}>
                 <MaterialIcons name="cancel" size={30} color="gray" />
               </TouchableOpacity>
@@ -321,7 +321,7 @@ export default function Index() {
         <View className="flex-1 flex items-center justify-center">
           <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
             <View className="flex flex-row items-center justify-between">
-              <Text className="font-semibold text-lg">Join Via Code</Text>
+              <Text className="font-bold text-2xl">Join Via Code</Text>
               <TouchableOpacity onPress={() => setModalJoin(false)}>
                 <MaterialIcons name="cancel" size={30} color="gray" />
               </TouchableOpacity>

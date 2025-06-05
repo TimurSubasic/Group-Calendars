@@ -152,22 +152,37 @@ export default function Members() {
         <View className="flex-1 flex items-center justify-center">
           <View className="w-[90%] -mt-[10%] bg-white rounded-xl p-5 ">
             <View className="flex flex-row items-center justify-between">
-              <Text className="font-semibold text-lg">Kick Members</Text>
+              <Text className="font-bold text-2xl">Kick Members</Text>
               <TouchableOpacity onPress={() => setModal(false)}>
                 <MaterialIcons name="cancel" size={30} color="gray" />
               </TouchableOpacity>
             </View>
 
-            <View className="flex flex-col w-full items-start justify-center gap-5 my-10">
-              {nonAdmins &&
-                nonAdmins.map((user, index) => (
-                  <KickButton
-                    key={index}
-                    user={user}
-                    groupId={groupId as Id<"groups">}
-                  />
-                ))}
-            </View>
+            {nonAdmins.length === 0 ? (
+              <Text className="text-center text-gray-500 text-lg mt-5">
+                No members to kick
+              </Text>
+            ) : (
+              <Text className="text-center text-gray-500 text-lg mt-5">
+                Press and hold to kick
+              </Text>
+            )}
+
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ flexGrow: 1 }}
+            >
+              <View className="flex flex-col w-full items-start justify-center gap-5 my-10">
+                {nonAdmins &&
+                  nonAdmins.map((user, index) => (
+                    <KickButton
+                      key={index}
+                      user={user}
+                      groupId={groupId as Id<"groups">}
+                    />
+                  ))}
+              </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
