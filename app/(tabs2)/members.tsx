@@ -80,7 +80,10 @@ export default function Members() {
   const animatedHeightKick = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const shouldShow = nonAdmins?.length !== 0;
+    if (nonAdmins === undefined) {
+      return;
+    }
+    const shouldShow = nonAdmins.length > 0;
 
     Animated.timing(animatedHeightKick, {
       toValue: shouldShow ? 60 : 0, // adjust to your button height

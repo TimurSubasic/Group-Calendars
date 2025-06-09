@@ -1,6 +1,26 @@
 import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 
+function formatDate(dateStr: string) {
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const [, mm, dd] = dateStr.split("-");
+  const monthIndex = parseInt(mm, 10) - 1;
+  return `${monthNames[monthIndex]} ${dd}`;
+}
+
 export const createBooking = mutation({
   args: {
     groupId: v.id("groups"),
@@ -53,26 +73,6 @@ export const getByGroupId = query({
     groupId: v.id("groups"),
   },
   handler: async (ctx, args) => {
-    function formatDate(dateStr: string) {
-      const monthNames = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
-      const [, mm, dd] = dateStr.split("-");
-      const monthIndex = parseInt(mm, 10) - 1;
-      return `${monthNames[monthIndex]} ${dd}`;
-    }
-
     const bookings = await ctx.db
       .query("bookings")
       .withIndex("by_group_and_start_date", (q) =>
@@ -109,9 +109,23 @@ export const getUserBookings = query({
       .withIndex("by_group_and_user", (q) =>
         q.eq("groupId", args.groupId).eq("userId", args.userId)
       )
+      .order("asc")
       .collect();
 
-    return bookings;
+    const user = await ctx.db.get(args.userId);
+
+    return Promise.all(
+      bookings.map(async (booking) => {
+        return {
+          _id: booking._id,
+          startDate: formatDate(booking.startDate),
+          endDate: formatDate(booking.endDate),
+          note: booking.note,
+          username: user?.username ?? "Not Found",
+          color: user?.color ?? "#000000",
+        };
+      })
+    );
   },
 });
 

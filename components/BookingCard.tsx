@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Id } from "@/convex/_generated/dataModel";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { BlurView } from "expo-blur";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
 export default function BookingCard({
   booking,
@@ -36,9 +37,15 @@ export default function BookingCard({
               <Text className="font-semibold text-xl">{booking.username}</Text>
 
               <View className="flex flex-row items-center justify-center gap-2">
-                <Text className="text-lg">{booking.startDate}</Text>
+                <Text className="text-lg font-medium">{booking.startDate}</Text>
                 {booking.endDate !== booking.startDate && (
-                  <Text className="text-lg">{" - " + booking.endDate}</Text>
+                  <View className="flex flex-row items-center justify-center gap-2">
+                    <FontAwesome6 name="angles-right" size={18} color="black" />
+
+                    <Text className="text-lg font-medium">
+                      {booking.endDate}
+                    </Text>
+                  </View>
                 )}
               </View>
             </View>
@@ -93,12 +100,22 @@ export default function BookingCard({
                       {booking.username}
                     </Text>
 
-                    <View className="flex flex-row items-start gap-2">
-                      <Text className="text-lg">{booking.startDate}</Text>
+                    <View className="flex flex-row items-center justify-center gap-2">
+                      <Text className="text-lg font-medium">
+                        {booking.startDate}
+                      </Text>
                       {booking.endDate !== booking.startDate && (
-                        <Text className="text-lg">
-                          {" - " + booking.endDate}
-                        </Text>
+                        <View className="flex flex-row items-center justify-center gap-2">
+                          <FontAwesome6
+                            name="angles-right"
+                            size={18}
+                            color="black"
+                          />
+
+                          <Text className="text-lg font-medium">
+                            {booking.endDate}
+                          </Text>
+                        </View>
                       )}
                     </View>
                   </View>

@@ -35,6 +35,6 @@ export default defineSchema({
     .index("by_group_id", ["groupId"])
     .index("by_group_and_start_date", ["groupId", "startDate"])
     .index("by_user_id", ["userId"])
-    .index("by_group_and_user", ["groupId", "userId"])
+    .index("by_group_and_user", ["groupId", "userId", "startDate"])
     .index("by_end_date", ["endDate"]),
 });
