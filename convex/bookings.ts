@@ -86,6 +86,7 @@ export const getByGroupId = query({
         const user = await ctx.db.get(booking.userId);
 
         return {
+          _id: booking._id,
           startDate: formatDate(booking.startDate),
           endDate: formatDate(booking.endDate),
           note: booking.note,

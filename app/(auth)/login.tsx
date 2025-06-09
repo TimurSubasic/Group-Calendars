@@ -27,10 +27,10 @@ const Login = () => {
   return (
     <View className="flex-1 flex-col items-center justify-around m-5">
       <View className="flex flex-col items-center justify-center w-full gap-2">
-        <Text className="text-4xl font-bold text-slate-800">
+        <Text className="text-4xl font-bold text-slate-800 text-center">
           Welcome to Group Calendars
         </Text>
-        <Text className="text-lg font-semibold text-slate-600">
+        <Text className="text-lg font-semibold text-slate-600 text-center">
           The best way to manage your group calendars
         </Text>
       </View>

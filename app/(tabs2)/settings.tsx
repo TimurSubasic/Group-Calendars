@@ -6,8 +6,9 @@ import {
   TextInput,
   Switch,
   Modal,
+  Animated,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -51,6 +52,11 @@ export default function Settings() {
     groupId ? { groupId: groupId as Id<"groups"> } : "skip"
   );
 
+  const nonAdmins = useQuery(
+    api.groupMembers.getNonAdmins,
+    groupId ? { groupId: groupId as Id<"groups"> } : "skip"
+  );
+
   const updateMaxBookings = useMutation(api.groups.updateMaxBookings);
 
   const updateAllowJoin = useMutation(api.groups.updateAllowJoin);
@@ -62,33 +68,39 @@ export default function Settings() {
   const [allowJoin, setAllowJoin] = useState<boolean>(false);
 
   const [maxBookings, setMaxBookings] = useState<number | undefined>(undefined);
-  const [debouncedMaxBookings, setDebouncedMaxBookings] = useState<
-    number | undefined
-  >(undefined);
+  const animatedHeightSave = useRef(new Animated.Value(0)).current;
 
-  // Debounce effect
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedMaxBookings(maxBookings);
-    }, 700);
+    const shouldShow = maxBookings !== group?.maxBookings;
 
-    return () => clearTimeout(timer);
-  }, [maxBookings]);
+    Animated.timing(animatedHeightSave, {
+      toValue: shouldShow ? 60 : 0, // adjust to your button height
+      duration: 300,
+      useNativeDriver: false, // height can't use native driver
+    }).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [maxBookings, group?.maxBookings]);
+
+  const animatedHeightAdd = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const shouldShow = nonAdmins?.length !== 0;
+
+    Animated.timing(animatedHeightAdd, {
+      toValue: shouldShow ? 60 : 0, // adjust to your button height
+      duration: 300,
+      useNativeDriver: false, // height can't use native driver
+    }).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nonAdmins]);
 
   // Effect to update database when debounced value changes
-  useEffect(() => {
-    if (
-      group &&
-      debouncedMaxBookings &&
-      debouncedMaxBookings !== group.maxBookings
-    ) {
-      updateMaxBookings({
-        groupId: groupId as Id<"groups">,
-        maxBookings: debouncedMaxBookings,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedMaxBookings, group]);
+  const saveMaxBookings = () => {
+    updateMaxBookings({
+      groupId: groupId as Id<"groups">,
+      maxBookings: maxBookings as number,
+    });
+  };
 
   const handlePlus = () => {
     if (maxBookings && maxBookings < 10) {
@@ -152,11 +164,6 @@ export default function Settings() {
 
   const [modalAddAdmin, setModalAddAdmin] = useState(false);
 
-  const nonAdmins = useQuery(
-    api.groupMembers.getNonAdmins,
-    groupId ? { groupId: groupId as Id<"groups"> } : "skip"
-  );
-
   if (
     isAdmin === undefined ||
     admins === undefined ||
@@ -212,16 +219,24 @@ export default function Settings() {
                 <MapMembers users={admins} />
               </View>
 
-              <TouchableOpacity
-                onPress={() => {
-                  setModalAddAdmin(true);
+              <Animated.View
+                style={{
+                  height: animatedHeightAdd,
+                  overflow: "hidden",
+                  width: "100%",
                 }}
-                className="w-full rounded-lg bg-slate-800 p-5"
               >
-                <Text className="text-white font-bold text-xl text-center">
-                  Add Admins
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    setModalAddAdmin(true);
+                  }}
+                  className="w-full rounded-lg bg-slate-800 p-5"
+                >
+                  <Text className="text-white font-bold text-xl text-center">
+                    Add Admins
+                  </Text>
+                </TouchableOpacity>
+              </Animated.View>
 
               <View className="flex w-full flex-row items-center justify-between my-5">
                 <Text className="text-xl font-semibold">
@@ -248,6 +263,23 @@ export default function Settings() {
                   </TouchableOpacity>
                 </View>
               </View>
+
+              <Animated.View
+                style={{
+                  height: animatedHeightSave,
+                  overflow: "hidden",
+                  width: "100%",
+                }}
+              >
+                <TouchableOpacity
+                  onPress={saveMaxBookings}
+                  className="w-full rounded-lg bg-slate-800 p-5"
+                >
+                  <Text className="text-white font-bold text-xl text-center">
+                    Save
+                  </Text>
+                </TouchableOpacity>
+              </Animated.View>
 
               <View className="flex w-full flex-row items-center justify-between my-5">
                 <Text className="text-xl font-semibold">

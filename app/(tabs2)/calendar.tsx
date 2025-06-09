@@ -13,11 +13,11 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import Loading from "@/components/Loading";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useUser } from "@clerk/clerk-expo";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { BlurView } from "expo-blur";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import BookingCard from "@/components/BookingCard";
 
 interface MarkedDates {
   [date: string]: {
@@ -277,44 +277,16 @@ export default function Bookings() {
           </View>
         </View>
 
-        {/* Bookings View Box */}
-        <View className="mt-5 border border-slate-600 rounded-lg bg-white">
+        {/* Bookings View Box classes: border border-slate-600 rounded-lg bg-white*/}
+        <View className="mt-5 ">
           <Text className="text-3xl font-semibold text-center my-5">
             Bookings
           </Text>
 
           <View className="flex flex-col items-center justify-center gap-5 my-3">
             {bookings?.length !== 0 ? (
-              bookings?.map((data, index) => (
-                <View key={index}>
-                  <View
-                    className={` w-full flex flex-row items-center justify-between p-5 `}
-                  >
-                    <Text className="font-semibold text-xl bg-white w-[35%] rounded-r-3xl">
-                      {data.username}
-                    </Text>
-
-                    <View className="felx flex-row items-center justify-center gap-5">
-                      {data.startDate === data.endDate ? (
-                        <View />
-                      ) : (
-                        <Text className="font-medium text-lg">
-                          {data.startDate}
-                        </Text>
-                      )}
-
-                      <FontAwesome
-                        size={30}
-                        name="arrow-circle-right"
-                        color={data.color}
-                        className="shadow"
-                      />
-                      <Text className="font-medium text-lg">
-                        {data.endDate}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
+              bookings?.map((booking, index) => (
+                <BookingCard booking={booking} key={index} />
               ))
             ) : (
               <View className="w-full my-10">

@@ -23,7 +23,7 @@ export default function KickButton({
   const kickMember = useMutation(api.groupMembers.removeMember);
 
   const fillAnim = useRef(new Animated.Value(0)).current;
-  const LONG_PRESS_DURATION = 1300;
+  const LONG_PRESS_DURATION = 1000;
 
   const startFill = () => {
     fillAnim.setValue(0);

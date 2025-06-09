@@ -1,5 +1,12 @@
-import { View, Text, ScrollView, TouchableOpacity, Modal } from "react-native";
-import React, { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Modal,
+  Animated,
+} from "react-native";
+import React, { useEffect, useRef, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useGroup } from "@/contexts/GroupContext";
@@ -21,6 +28,10 @@ export default function Members() {
   });
 
   const group = useQuery(api.groups.getById, {
+    groupId: groupId as Id<"groups">,
+  });
+
+  const nonAdmins = useQuery(api.groupMembers.getNonAdmins, {
     groupId: groupId as Id<"groups">,
   });
 
@@ -66,9 +77,18 @@ export default function Members() {
 
   const [modal, setModal] = useState(false);
 
-  const nonAdmins = useQuery(api.groupMembers.getNonAdmins, {
-    groupId: groupId as Id<"groups">,
-  });
+  const animatedHeightKick = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const shouldShow = nonAdmins?.length !== 0;
+
+    Animated.timing(animatedHeightKick, {
+      toValue: shouldShow ? 60 : 0, // adjust to your button height
+      duration: 300,
+      useNativeDriver: false, // height can't use native driver
+    }).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nonAdmins]);
 
   if (
     group === undefined ||
@@ -115,16 +135,24 @@ export default function Members() {
         )}
 
         {isAdmin && (
-          <TouchableOpacity
-            onPress={() => {
-              setModal(true);
+          <Animated.View
+            style={{
+              height: animatedHeightKick,
+              overflow: "hidden",
+              width: "100%",
             }}
-            className="w-full rounded-lg bg-red-600 p-5"
           >
-            <Text className="text-white font-bold text-xl text-center">
-              Kick Members
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setModal(true);
+              }}
+              className="w-full rounded-lg bg-red-600 p-5"
+            >
+              <Text className="text-white font-bold text-xl text-center">
+                Kick Members
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
         )}
       </View>
 
