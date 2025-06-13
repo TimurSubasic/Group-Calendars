@@ -178,7 +178,7 @@ export default function Index() {
       </View>
 
       {/* buttons */}
-      <View className="w-full flex flex-row items-center justify-center gap-3 border-t-2 border-slate-800 pt-4 p-5">
+      <View className="w-full flex flex-row items-center justify-center gap-3 pt-4 p-5">
         <TouchableOpacity
           onPress={() => setModalCreate(true)}
           className="flex-1 flex-row items-center justify-between rounded-lg bg-slate-800 px-7 py-3"

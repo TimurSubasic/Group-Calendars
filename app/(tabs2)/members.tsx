@@ -125,41 +125,40 @@ export default function Members() {
       </View>
 
       {/* buttons */}
-      {group?.allowJoin && isAdmin && (
-        <View className="w-full flex flex-col items-center justify-center gap-3 border-t-2 border-slate-800 pt-4 p-5">
-          {group?.allowJoin && (
+
+      <View className="w-full flex flex-col items-center justify-center gap-3 pt-4 p-5">
+        {group?.allowJoin && (
+          <TouchableOpacity
+            onPress={handleAdd}
+            className="w-full flex-row items-center justify-center rounded-lg bg-slate-800 p-5"
+          >
+            <Text className="text-white font-bold text-xl text-center">
+              Add Members
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {isAdmin && (
+          <Animated.View
+            style={{
+              height: animatedHeightKick,
+              overflow: "hidden",
+              width: "100%",
+            }}
+          >
             <TouchableOpacity
-              onPress={handleAdd}
-              className="w-full flex-row items-center justify-center rounded-lg bg-slate-800 p-5"
+              onPress={() => {
+                setModal(true);
+              }}
+              className="w-full rounded-lg bg-red-600 p-5"
             >
               <Text className="text-white font-bold text-xl text-center">
-                Add Members
+                Kick Members
               </Text>
             </TouchableOpacity>
-          )}
-
-          {isAdmin && (
-            <Animated.View
-              style={{
-                height: animatedHeightKick,
-                overflow: "hidden",
-                width: "100%",
-              }}
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  setModal(true);
-                }}
-                className="w-full rounded-lg bg-red-600 p-5"
-              >
-                <Text className="text-white font-bold text-xl text-center">
-                  Kick Members
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
-          )}
-        </View>
-      )}
+          </Animated.View>
+        )}
+      </View>
 
       <Toast config={toastConfig} />
 
