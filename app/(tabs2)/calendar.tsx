@@ -1,25 +1,25 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Modal,
-} from "react-native";
-import React, { useEffect, useState } from "react";
-import { Calendar, DateData } from "react-native-calendars";
+import BookingCard from "@/components/BookingCard";
+import DeleteBookButton from "@/components/DeleteBookButton";
+import Loading from "@/components/Loading";
 import { useGroup } from "@/contexts/GroupContext";
-import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import Loading from "@/components/Loading";
 import { useUser } from "@clerk/clerk-expo";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { BlurView } from "expo-blur";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import BookingCard from "@/components/BookingCard";
+import { useMutation, useQuery } from "convex/react";
+import { BlurView } from "expo-blur";
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Calendar, DateData } from "react-native-calendars";
 import Toast, { BaseToast } from "react-native-toast-message";
-import DeleteBookButton from "@/components/DeleteBookButton";
 
 interface MarkedDates {
   [date: string]: {
@@ -56,6 +56,10 @@ export default function Bookings() {
       : "skip"
   );
 
+  const group = useQuery(api.groups.getById, {
+    groupId: groupId as Id<"groups">,
+  });
+
   const today = new Date().toString();
 
   //date consts states
@@ -68,9 +72,68 @@ export default function Bookings() {
     groupId: groupId as Id<"groups">,
   });
 
+  //local marked dates
   useEffect(() => {
     setLocalMarkedDates({ ...markedDatesDB, ...markedDates });
   }, [markedDatesDB, markedDates]);
+
+  const [modalMaxBookings, setModalMaxBookings] = useState<boolean>(false);
+
+  //modal max bookings
+  useEffect(() => {
+    if (group && userBookings) {
+      if (userBookings.length > group.maxBookings) {
+        setModalMaxBookings(true);
+      } else {
+        setModalMaxBookings(false);
+      }
+    }
+  }, [group, userBookings]);
+
+  const [note, setNote] = useState<string | undefined>(undefined);
+  const [modalSave, setModalSave] = useState<boolean>(false);
+  const createBooking = useMutation(api.bookings.createBooking);
+
+  //toast config
+  const toastConfig = {
+    success: (props: any) => (
+      <BaseToast
+        {...props}
+        style={{ borderLeftColor: "#1e293b", borderLeftWidth: 10 }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
+        text1Style={{ fontSize: 18 }}
+        text2Style={{ fontSize: 16 }}
+      />
+    ),
+  };
+
+  // show modal or toast if no date is selected or max bookings reached
+  const handleModalSave = () => {
+    if (userBookings?.length && group?.maxBookings) {
+      if (userBookings.length < group.maxBookings) {
+        if (startDate !== "") {
+          setModalSave(true);
+        } else {
+          Toast.show({
+            type: "success",
+            text1: "Please select a date",
+            position: "top",
+            visibilityTime: 3500,
+          });
+        }
+      } else {
+        Toast.show({
+          type: "success",
+          text1: "Max Bookings Reached",
+          position: "top",
+          visibilityTime: 3500,
+        });
+        setStartDate("");
+        setEndDate("");
+        setMarkedDates({});
+      }
+    }
+  };
 
   //calendar functions
   const handleDayPress = (day: DateData) => {
@@ -149,38 +212,9 @@ export default function Bookings() {
     }
   };
 
-  const [note, setNote] = useState<string | undefined>(undefined);
-  const [modalSave, setModalSave] = useState<boolean>(false);
-
-  const toastConfig = {
-    success: (props: any) => (
-      <BaseToast
-        {...props}
-        style={{ borderLeftColor: "#1e293b", borderLeftWidth: 10 }}
-        contentContainerStyle={{ paddingHorizontal: 15 }}
-        text1Style={{ fontSize: 18 }}
-        text2Style={{ fontSize: 16 }}
-      />
-    ),
-  };
-
-  const handleModalSave = () => {
-    if (startDate !== "") {
-      setModalSave(true);
-    } else {
-      Toast.show({
-        type: "success",
-        text1: "Please select a date",
-        position: "top",
-        visibilityTime: 3500,
-      });
-    }
-  };
-
-  const createBooking = useMutation(api.bookings.createBooking);
-
+  //save booking
   const handleSave = async () => {
-    if (startDate) {
+    if (startDate !== "") {
       let myNote = note;
 
       if (myNote === "") {
@@ -208,12 +242,16 @@ export default function Bookings() {
 
       setNote("");
 
+      setStartDate("");
+      setEndDate("");
+
       if (!booking.success) {
         // setVisible(true);
       }
     }
   };
 
+  //format date
   const formatDate = (dateStr: string) => {
     const monthNames = [
       "Jan",
@@ -337,6 +375,7 @@ export default function Bookings() {
             keyboardShouldPersistTaps="handled"
             scrollEnabled={false}
             contentContainerStyle={{ flexGrow: 1 }}
+            keyboardDismissMode="on-drag"
           >
             <BlurView
               intensity={100}
@@ -437,6 +476,60 @@ export default function Bookings() {
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ flexGrow: 1 }}
+                bounces={false}
+              >
+                <View className="flex flex-col w-full items-start justify-center gap-5 my-10">
+                  {userBookings &&
+                    userBookings.map((booking, index) => (
+                      <DeleteBookButton key={index} booking={booking} />
+                    ))}
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalMaxBookings}
+          onRequestClose={() => {
+            setModalMaxBookings(false);
+          }}
+        >
+          <BlurView
+            intensity={100}
+            tint="dark"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          />
+          <View className="flex-1 flex items-center justify-center">
+            <View className="w-[90%] max-h-[80%] -mt-[10%] bg-white rounded-xl p-5 ">
+              <Text className="font-bold text-center text-2xl">
+                Max Bookings Reached
+              </Text>
+
+              <Text className="text-center text-gray-500 text-lg mt-5">
+                You have {userBookings.length} bookings.
+              </Text>
+
+              <Text className="text-center text-gray-500 text-lg">
+                Group allows {group?.maxBookings} bookings.
+              </Text>
+
+              <Text className="text-center text-gray-500 text-lg mt-5">
+                Press and hold to delete
+              </Text>
+
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ flexGrow: 1 }}
+                bounces={false}
               >
                 <View className="flex flex-col w-full items-start justify-center gap-5 my-10">
                   {userBookings &&

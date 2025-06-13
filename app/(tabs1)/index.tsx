@@ -1,25 +1,25 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  Switch,
-  TextInput,
-} from "react-native";
-import React, { useEffect, useState } from "react";
-import { useRouter } from "expo-router";
-import { useGroup } from "@/contexts/GroupContext";
-import { useUser } from "@clerk/clerk-expo";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import Loading from "@/components/Loading";
 import NoGroups from "@/components/NoGroups";
+import { useGroup } from "@/contexts/GroupContext";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useUser } from "@clerk/clerk-expo";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Id } from "@/convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
 import { BlurView } from "expo-blur";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  ScrollView,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Index() {
   const router = useRouter();
@@ -212,6 +212,7 @@ export default function Index() {
           keyboardShouldPersistTaps="handled"
           scrollEnabled={false}
           contentContainerStyle={{ flexGrow: 1 }}
+          keyboardDismissMode="on-drag"
         >
           <BlurView
             intensity={100}

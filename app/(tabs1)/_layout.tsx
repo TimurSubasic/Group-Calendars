@@ -1,7 +1,7 @@
-import { Tabs, useSegments } from "expo-router";
-import { Text, View } from "react-native";
-import { useEffect, useState } from "react";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import { Tabs, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
+import { Text, View } from "react-native";
 
 export default function TabLayout() {
   const segments = useSegments();

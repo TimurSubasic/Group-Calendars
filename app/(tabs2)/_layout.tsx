@@ -1,14 +1,14 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Tabs, useRouter } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
-import { useGroup } from "@/contexts/GroupContext";
-import { useQuery } from "convex/react";
-import { Id } from "@/convex/_generated/dataModel";
-import { api } from "@/convex/_generated/api";
-import { useUser } from "@clerk/clerk-expo";
 import Loading from "@/components/Loading";
-import { useEffect } from "react";
+import { useGroup } from "@/contexts/GroupContext";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useUser } from "@clerk/clerk-expo";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useQuery } from "convex/react";
+import { Tabs, useRouter } from "expo-router";
+import { useEffect } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
 export default function TabLayout() {
   const { groupId, groupName, setGroupId, setGroupName } = useGroup();
@@ -65,7 +65,7 @@ export default function TabLayout() {
         {/* Back Button */}
         <TouchableOpacity
           onPress={handleBackPress}
-          className="flex flex-row items-center justify-center absolute left-5 top-5"
+          className="flex flex-row items-center justify-center absolute p-5"
         >
           <MaterialIcons name="arrow-back-ios" size={24} color="white" />
           <Text className="text-lg font-bold text-white">Back</Text>

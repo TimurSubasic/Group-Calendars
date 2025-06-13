@@ -1,26 +1,26 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Switch,
-  Modal,
-  Animated,
-} from "react-native";
-import React, { useEffect, useRef, useState } from "react";
-import { useUser } from "@clerk/clerk-expo";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useGroup } from "@/contexts/GroupContext";
-import { Id } from "@/convex/_generated/dataModel";
-import Loading from "@/components/Loading";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { useRouter } from "expo-router";
-import { BlurView } from "expo-blur";
-import MapMembers from "@/components/MapMembers";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AdminButton from "@/components/AdminButton";
+import Loading from "@/components/Loading";
+import MapMembers from "@/components/MapMembers";
+import { useGroup } from "@/contexts/GroupContext";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useUser } from "@clerk/clerk-expo";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useMutation, useQuery } from "convex/react";
+import { BlurView } from "expo-blur";
+import { useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  Modal,
+  ScrollView,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Settings() {
   const router = useRouter();
@@ -84,7 +84,10 @@ export default function Settings() {
   const animatedHeightAdd = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const shouldShow = nonAdmins?.length !== 0;
+    if (nonAdmins === undefined) {
+      return;
+    }
+    const shouldShow = nonAdmins.length > 0;
 
     Animated.timing(animatedHeightAdd, {
       toValue: shouldShow ? 60 : 0, // adjust to your button height
@@ -149,6 +152,7 @@ export default function Settings() {
   };
 
   const [modalDelete, setModalDelete] = useState(false);
+  const [modalLeave, setModalLeave] = useState(false);
 
   const deleteGroup = useMutation(api.groups.deleteGroup);
 
@@ -178,6 +182,7 @@ export default function Settings() {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ flexGrow: 1 }}
+      keyboardDismissMode="on-drag"
     >
       <View className="p-5 flex-1">
         <View className="flex-1 flex-col items-center justify-between w-full">
@@ -320,7 +325,9 @@ export default function Settings() {
           {/* leave group btn */}
           <View className="w-full flex flex-col items-center justify-center gap-5 mt-10">
             <TouchableOpacity
-              onPress={handleLeave}
+              onPress={() => {
+                setModalLeave(true);
+              }}
               className="w-full rounded-lg bg-red-600 p-5"
             >
               <Text className="text-white font-bold text-xl text-center">
@@ -343,6 +350,8 @@ export default function Settings() {
           </View>
         </View>
       </View>
+
+      {/* delete group modal */}
 
       <Modal
         animationType="fade"
@@ -395,6 +404,61 @@ export default function Settings() {
         </View>
       </Modal>
 
+      {/* leave group modal */}
+
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalLeave}
+        onRequestClose={() => {
+          setModalLeave(false);
+        }}
+      >
+        <BlurView
+          intensity={100}
+          tint="dark"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+        <View className="flex-1 flex items-center justify-center">
+          <View className="w-[80%] -mt-[10%] bg-white rounded-xl p-5 ">
+            <Text className="text-2xl font-bold text-center">
+              Leave This Group
+            </Text>
+
+            <Text className="text-lg font-semibold text-gray-500 text-center">
+              This action can not be undone
+            </Text>
+
+            <View className="flex flex-row w-full mt-10 gap-3">
+              <TouchableOpacity
+                onPress={() => setModalLeave(false)}
+                className="p-5 bg-slate-800 rounded-lg flex-1"
+              >
+                <Text className="text-center text-white font-bold text-xl ">
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleLeave}
+                className="p-5 bg-red-600 rounded-lg flex-1"
+              >
+                <Text className="text-center text-white font-bold text-xl ">
+                  Leave
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* add admin modal */}
+
       <Modal
         animationType="fade"
         transparent={true}
@@ -441,6 +505,7 @@ export default function Settings() {
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ flexGrow: 1 }}
+              bounces={false}
             >
               <View className="flex flex-col w-full items-start justify-center gap-5 my-10">
                 {nonAdmins &&

@@ -2,6 +2,7 @@ import Loading from "@/components/Loading";
 import { api } from "@/convex/_generated/api";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useMutation, useQuery } from "convex/react";
+import { BlurView } from "expo-blur";
 import { useSegments } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -14,7 +15,6 @@ import {
   View,
 } from "react-native";
 import colors from "../../components/colors";
-import { BlurView } from "expo-blur";
 
 const Settings = () => {
   const { signOut } = useAuth();
@@ -101,6 +101,7 @@ const Settings = () => {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ flexGrow: 1 }}
+      keyboardDismissMode="on-drag"
     >
       <View>
         <View className="p-5">

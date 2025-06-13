@@ -1,24 +1,24 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Modal,
-  Animated,
-} from "react-native";
-import React, { useEffect, useRef, useState } from "react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useGroup } from "@/contexts/GroupContext";
-import { Id } from "@/convex/_generated/dataModel";
-import * as Clipboard from "expo-clipboard";
-import Loading from "@/components/Loading";
-import Toast, { BaseToast } from "react-native-toast-message";
-import { useUser } from "@clerk/clerk-expo";
-import MapMembers from "@/components/MapMembers";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { BlurView } from "expo-blur";
 import KickButton from "@/components/KickButton";
+import Loading from "@/components/Loading";
+import MapMembers from "@/components/MapMembers";
+import { useGroup } from "@/contexts/GroupContext";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useUser } from "@clerk/clerk-expo";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useQuery } from "convex/react";
+import { BlurView } from "expo-blur";
+import * as Clipboard from "expo-clipboard";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Toast, { BaseToast } from "react-native-toast-message";
 
 export default function Members() {
   const { groupId } = useGroup();
@@ -125,39 +125,41 @@ export default function Members() {
       </View>
 
       {/* buttons */}
-      <View className="w-full flex flex-col items-center justify-center gap-3 border-t-2 border-slate-800 pt-4 p-5">
-        {group?.allowJoin && (
-          <TouchableOpacity
-            onPress={handleAdd}
-            className="w-full flex-row items-center justify-center rounded-lg bg-slate-800 p-5"
-          >
-            <Text className="text-white font-bold text-xl text-center">
-              Add Members
-            </Text>
-          </TouchableOpacity>
-        )}
-
-        {isAdmin && (
-          <Animated.View
-            style={{
-              height: animatedHeightKick,
-              overflow: "hidden",
-              width: "100%",
-            }}
-          >
+      {group?.allowJoin && isAdmin && (
+        <View className="w-full flex flex-col items-center justify-center gap-3 border-t-2 border-slate-800 pt-4 p-5">
+          {group?.allowJoin && (
             <TouchableOpacity
-              onPress={() => {
-                setModal(true);
-              }}
-              className="w-full rounded-lg bg-red-600 p-5"
+              onPress={handleAdd}
+              className="w-full flex-row items-center justify-center rounded-lg bg-slate-800 p-5"
             >
               <Text className="text-white font-bold text-xl text-center">
-                Kick Members
+                Add Members
               </Text>
             </TouchableOpacity>
-          </Animated.View>
-        )}
-      </View>
+          )}
+
+          {isAdmin && (
+            <Animated.View
+              style={{
+                height: animatedHeightKick,
+                overflow: "hidden",
+                width: "100%",
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  setModal(true);
+                }}
+                className="w-full rounded-lg bg-red-600 p-5"
+              >
+                <Text className="text-white font-bold text-xl text-center">
+                  Kick Members
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+        </View>
+      )}
 
       <Toast config={toastConfig} />
 
@@ -202,6 +204,7 @@ export default function Members() {
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ flexGrow: 1 }}
+              bounces={false}
             >
               <View className="flex flex-col w-full items-start justify-center gap-5 my-10">
                 {nonAdmins &&
