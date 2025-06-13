@@ -306,6 +306,9 @@ export default function Bookings() {
               markingType="period"
               minDate={today}
               allowSelectionOutOfRange={false}
+              disableArrowLeft={false}
+              disableArrowRight={false}
+              disableAllTouchEventsForDisabledDays={true}
               theme={{
                 todayTextColor: "#000",
                 selectedDayBackgroundColor: "#000",
