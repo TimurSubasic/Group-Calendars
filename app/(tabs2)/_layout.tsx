@@ -32,7 +32,7 @@ export default function TabLayout() {
 
   const groupFound = useQuery(
     api.groupMembers.findGroup,
-    fullUser
+    fullUser && groupId
       ? {
           groupId: groupId as Id<"groups">,
           userId: fullUser._id,
@@ -40,9 +40,14 @@ export default function TabLayout() {
       : "skip"
   );
 
-  const group = useQuery(api.groups.getById, {
-    groupId: groupId as Id<"groups">,
-  });
+  const group = useQuery(
+    api.groups.getById,
+    groupId
+      ? {
+          groupId: groupId as Id<"groups">,
+        }
+      : "skip"
+  );
 
   useEffect(() => {
     if (group && group.name !== groupName) {

@@ -39,7 +39,7 @@ export const addMember = mutation({
     if (existingMember) {
       return {
         success: false,
-        message: "User already in group",
+        message: "You are already in this group",
       };
     }
 

@@ -109,29 +109,31 @@ export default function Bookings() {
 
   // show modal or toast if no date is selected or max bookings reached
   const handleModalSave = () => {
-    if (userBookings?.length && group?.maxBookings) {
-      if (userBookings.length < group.maxBookings) {
-        if (startDate !== "") {
-          setModalSave(true);
-        } else {
-          Toast.show({
-            type: "success",
-            text1: "Please select a date",
-            position: "top",
-            visibilityTime: 3500,
-          });
-        }
+    if (!userBookings || !group) {
+      console.log("User bookings or group data is not available.");
+      return;
+    }
+    if (userBookings.length < group.maxBookings) {
+      if (startDate !== "") {
+        setModalSave(true);
       } else {
         Toast.show({
           type: "success",
-          text1: "Max Bookings Reached",
+          text1: "Please select a date",
           position: "top",
           visibilityTime: 3500,
         });
-        setStartDate("");
-        setEndDate("");
-        setMarkedDates({});
       }
+    } else {
+      Toast.show({
+        type: "success",
+        text1: "Max Bookings Reached",
+        position: "top",
+        visibilityTime: 3500,
+      });
+      setStartDate("");
+      setEndDate("");
+      setMarkedDates({});
     }
   };
 

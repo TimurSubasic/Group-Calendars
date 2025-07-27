@@ -110,6 +110,52 @@ export const getById = query({
   },
 });
 
+export const validateGroup = query({
+  args: { groupId: v.string() },
+  handler: async (ctx, { groupId }) => {
+    const normalizedId = ctx.db.normalizeId("groups", groupId);
+    if (!normalizedId)
+      return {
+        success: false,
+        message: "Invalid ID",
+      };
+
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity)
+      return {
+        success: false,
+        message: "User not authenticated",
+      };
+
+    // Find the user by Clerk ID
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user)
+      return {
+        success: false,
+        message: "User not found",
+      };
+
+    // Check group membership
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_group_and_user", (q) =>
+        q.eq("groupId", normalizedId).eq("userId", user._id)
+      )
+      .unique();
+    if (!membership)
+      return {
+        success: false,
+        message: "User not in group",
+      };
+    return {
+      success: true,
+    };
+  },
+});
+
 export const getAdmins = query({
   args: {
     groupId: v.id("groups"),

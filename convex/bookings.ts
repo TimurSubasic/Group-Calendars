@@ -154,13 +154,12 @@ export const getMarkedDates = query({
     for (const booking of bookings) {
       // Get the user's color
       const user = await ctx.db.get(booking.userId);
-
       if (!user) continue;
 
       // Generate dates between fromDate and toDate
       const startDate = new Date(booking.startDate);
       const endDate = new Date(booking.endDate);
-      let currentDate = new Date(startDate);
+      const currentDate = new Date(startDate);
 
       while (currentDate <= endDate) {
         const dateString = currentDate.toISOString().split("T")[0];
@@ -175,6 +174,69 @@ export const getMarkedDates = query({
     }
 
     return markedDates;
+  },
+});
+
+function parseDateUTC(dateStr: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+}
+
+function formatDateUTC(date: Date): string {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(date.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function eachDayUTC(start: Date, end: Date): string[] {
+  const dates: string[] = [];
+  const current = new Date(
+    Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate())
+  );
+  const endUTC = new Date(
+    Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate())
+  );
+  while (current <= endUTC) {
+    dates.push(formatDateUTC(current));
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+  return dates;
+}
+
+export const getBookedDatesWithColors = query({
+  args: {
+    groupId: v.id("groups"),
+  },
+  handler: async (ctx, args) => {
+    const bookings = await ctx.db
+      .query("bookings")
+      .withIndex("by_group_id", (q) => q.eq("groupId", args.groupId))
+      .collect();
+
+    const bookedDates: {
+      date: string;
+      color: string;
+      isStart: boolean;
+      isEnd: boolean;
+    }[] = [];
+
+    for (const booking of bookings) {
+      const user = await ctx.db.get(booking.userId);
+      if (!user) continue;
+      const startDate = parseDateUTC(booking.startDate);
+      const endDate = parseDateUTC(booking.endDate);
+      const days = eachDayUTC(startDate, endDate);
+      for (let i = 0; i < days.length; i++) {
+        bookedDates.push({
+          date: days[i],
+          color: user.color,
+          isStart: i === 0,
+          isEnd: i === days.length - 1,
+        });
+      }
+    }
+    return bookedDates;
   },
 });
 
